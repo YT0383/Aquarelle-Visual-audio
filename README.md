@@ -1,2 +1,34 @@
-# Aquarelle-Visual-audio
-An open-source audio visualizer that paints your music as watercolor. Pure vanilla JS in a single HTML file — no build step, no dependencies. Drop in a track and watch it bloom.
+# Aquarelle · 水彩音画
+
+> 把声音倒进纸里，看它晕开。
+
+纯前端的声音可视化实验。零依赖、零构建，浏览器打开 HTML 就能用；音频只在你的浏览器里解码，不经过任何服务器。
+
+## 两个版本
+
+| 文件 | 版本 | 说明 |
+| --- | --- | --- |
+| `index.html` | Aquarelle | 主版本。八种水彩笔法，频谱落到纸面，支持录制并保存高清视频 |
+| `Aquarelle_Protean.html` | Aquarelle Protean · 八面音画 | 同一段音频的八种画法——新艺术、少女漫画、千禧、超现实、韩式极简、纸艺、田园核、暗金 |
+
+## 在线体验
+
+https://yt0383.github.io/Aquarelle-Visual-audio/
+
+## 使用
+
+1. 打开页面
+2. 选择一段音频
+3. 挑笔法 / 风格 / 画质
+4. 需要的话点「开始录制」，结束后「保存到设备」
+
+## 说明
+
+- Web Audio API 分析频谱，Canvas 实时绘制水彩笔触
+- 无框架、无构建、无后端、无追踪
+- 音频不会离开你的设备
+- 页面保持可见才不掉帧
+
+## 许可
+
+MIT
