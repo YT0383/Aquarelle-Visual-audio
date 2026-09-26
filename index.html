@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aquarelle · 水彩音画</title>
+<style>
+  :root{
+    --paper:#faf6f0;
+    --paper-2:#f3ede4;
+    --rose:#d4a0a0;
+    --sky:#7bb8d4;
+    --sage:#8cc5a8;
+    --lav:#c3a0d4;
+    --ochre:#e8c87a;
+    --ink:#5a3e3e;
+    --line:rgba(212,160,160,.15);
+    --line-2:rgba(212,160,160,.2);
+    --r2:16px;
+    --r3:24px;
+    --sh-sm:0 2px 12px rgba(212,160,160,.08);
+    --sh-md:0 4px 20px rgba(212,160,160,.12);
+    --sh-lg:0 8px 32px rgba(212,160,160,.18);
+    --ease:cubic-bezier(.4,0,.2,1);
+    --dur:500ms;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Songti SC","Noto Serif SC","Source Han Serif SC",Georgia,"Times New Roman",serif;
+    letter-spacing:.02em;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .grain{
+    position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.3;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+  }
+  .wash{
+    position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(60% 55% at 12% 18%, rgba(212,160,160,.28), rgba(212,160,160,0) 70%),
+      radial-gradient(55% 50% at 88% 12%, rgba(123,184,212,.24), rgba(123,184,212,0) 70%),
+      radial-gradient(60% 55% at 78% 88%, rgba(195,160,212,.22), rgba(195,160,212,0) 70%),
+      radial-gradient(55% 50% at 15% 85%, rgba(140,197,168,.22), rgba(140,197,168,0) 70%),
+      linear-gradient(180deg,#faf6f0,#f6f0e8);
+  }
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 clamp(18px,5vw,56px)}
+
+  nav{
+    background:rgba(250,246,240,.8);
+    border-bottom:1px solid rgba(212,160,160,.15);
+    backdrop-filter:blur(8px);
+    position:sticky;top:0;z-index:30;
+  }
+  nav .inner{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 0}
+  .logo{font-size:20px;font-weight:600;letter-spacing:.14em;text-decoration:none;color:var(--ink)}
+  .logo small{display:block;font-size:11px;letter-spacing:.22em;color:rgba(90,62,62,.4);font-weight:400}
+  .navlinks{display:flex;gap:clamp(16px,3vw,32px);font-size:13px}
+  .navlinks a{color:rgba(90,62,62,.7);text-decoration:none;transition:color var(--dur) var(--ease)}
+  .navlinks a:hover{color:var(--rose)}
+
+  .hero{position:relative;padding:clamp(56px,10vw,128px) 0 clamp(40px,6vw,72px)}
+  .hero h1{
+    font-size:clamp(38px,7.5vw,84px);line-height:1.15;margin:0 0 22px;font-weight:600;letter-spacing:.04em;
+    background:linear-gradient(115deg,#5a3e3e 25%,#d4a0a0 60%,#7bb8d4 90%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p{max-width:34em;font-size:clamp(14px,2.4vw,17px);color:rgba(90,62,62,.72);margin:0 0 34px}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+  .hint{font-size:12.5px;color:rgba(90,62,62,.42)}
+  .leaf{position:absolute;pointer-events:none;opacity:.9}
+  .leaf-a{width:clamp(80px,14vw,150px);right:2%;top:8%;transform:rotate(18deg)}
+  .leaf-b{width:clamp(60px,10vw,110px);left:-1%;bottom:2%;transform:rotate(-24deg)}
+
+  .btn{
+    font-family:inherit;font-size:15px;letter-spacing:.08em;
+    color:var(--ink);
+    border:1px solid rgba(212,160,160,.18);
+    border-radius:var(--r2);
+    padding:.72em 1.5em;
+    cursor:pointer;
+    background-color:transparent;
+    background-image:radial-gradient(circle at 50% 46%, rgba(212,160,160,.95) 0%, rgba(212,160,160,.78) 48%, rgba(212,160,160,.55) 100%);
+    box-shadow:0 4px 20px rgba(212,160,160,.25);
+    transition:box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease), background-image var(--dur) var(--ease), opacity var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .btn:hover{box-shadow:0 10px 40px rgba(212,160,160,.5)}
+  .btn:active{box-shadow:inset 0 2px 4px rgba(90,62,62,.1)}
+  .btn:focus{outline:none}
+  .btn:focus-visible{box-shadow:0 0 0 3px rgba(212,160,160,.10),0 8px 32px rgba(212,160,160,.28)}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+  .btn.ghost{
+    background-image:radial-gradient(circle at 50% 46%, rgba(123,184,212,.55) 0%, rgba(123,184,212,.38) 55%, rgba(123,184,212,.2) 100%);
+    color:#2a4a5a;box-shadow:0 4px 20px rgba(123,184,212,.2);text-decoration:none;
+  }
+  .btn.ghost:hover{box-shadow:0 10px 40px rgba(123,184,212,.42)}
+  .btn.plain{
+    background-image:none;background-color:transparent;border-color:rgba(212,160,160,.2);box-shadow:none;
+    color:rgba(90,62,62,.75);
+  }
+  .btn.plain:hover{box-shadow:0 8px 28px rgba(212,160,160,.22);background-color:rgba(250,246,240,.9)}
+
+  .card{
+    border-radius:var(--r3);
+    background:rgba(250,246,240,.8);
+    border:1px solid rgba(212,160,160,.15);
+    box-shadow:var(--sh-md);
+    padding:clamp(20px,3.6vw,40px);
+    transition:background-color 700ms var(--ease), box-shadow 700ms var(--ease);
+  }
+  .card:hover{background-color:rgba(250,246,240,.95);box-shadow:var(--sh-lg)}
+
+  section{padding-bottom:clamp(48px,8vw,110px)}
+  h2{font-size:clamp(20px,3.4vw,30px);font-weight:600;letter-spacing:.08em;margin:0 0 18px}
+  h3{font-size:15px;font-weight:600;letter-spacing:.16em;color:rgba(90,62,62,.65);margin:0 0 14px}
+
+  .studio{display:grid;gap:clamp(18px,3vw,32px);grid-template-columns:1fr}
+  @media(min-width:900px){.studio{grid-template-columns:1.6fr 1fr;align-items:start}}
+
+  .stage-card{padding:clamp(12px,2vw,20px);position:relative}
+  .stage-box{position:relative;border-radius:20px;overflow:hidden;border:1px solid rgba(212,160,160,.15);background:#faf6f0}
+  canvas{display:block;width:100%;height:auto;aspect-ratio:16/9}
+  .rec-badge{
+    position:absolute;left:14px;top:14px;padding:.3em .9em;font-size:12px;letter-spacing:.14em;
+    border-radius:999px;background:rgba(212,160,160,.85);color:#4a2f2f;opacity:0;
+    transition:opacity var(--dur) var(--ease);box-shadow:0 4px 20px rgba(212,160,160,.4);
+  }
+  .rec-badge.on{opacity:1}
+  .drop-tip{
+    position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:6px;
+    color:rgba(90,62,62,.55);font-size:14px;letter-spacing:.1em;
+    background:radial-gradient(60% 60% at 50% 50%, rgba(212,160,160,.18), rgba(250,246,240,0) 75%);
+    transition:opacity var(--dur) var(--ease);
+  }
+  .drop-tip.hide{opacity:0;pointer-events:none}
+
+  .fileline{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .label{display:block;font-size:11.5px;letter-spacing:.2em;color:rgba(90,62,62,.38)}
+  .value{display:block;font-size:14.5px;max-width:22em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .transport{display:flex;align-items:center;gap:14px;margin:22px 0 6px}
+  .time{font-size:13px;color:rgba(90,62,62,.5);letter-spacing:.06em}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;margin:6px 0 4px;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:rgba(212,160,160,.24)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:18px;height:18px;border-radius:50%;margin-top:-6px;
+    background:radial-gradient(circle at 40% 35%, #f0d0d0, #d4a0a0 70%);
+    box-shadow:0 2px 12px rgba(212,160,160,.5);border:none;
+  }
+  input[type=range]::-moz-range-track{height:6px;border-radius:999px;background:rgba(212,160,160,.24)}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border:none;border-radius:50%;background:#d4a0a0}
+  input[type=range]:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(212,160,160,.10)}
+
+  .block{margin-top:26px}
+  .chips{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{
+    font-family:inherit;font-size:13.5px;letter-spacing:.08em;color:var(--ink);
+    border:1px solid rgba(212,160,160,.18);
+    border-radius:var(--r2);padding:.5em 1.05em;cursor:pointer;
+    background-color:rgba(250,246,240,.7);
+    transition:box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease), background-image var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .chip:hover{box-shadow:0 8px 28px rgba(212,160,160,.3);background-color:rgba(250,246,240,.95)}
+  .chip:active{box-shadow:inset 0 2px 4px rgba(90,62,62,.1)}
+  .chip:focus{outline:none}
+  .chip:focus-visible{box-shadow:0 0 0 3px rgba(212,160,160,.10)}
+  .chip[aria-pressed=true]{
+    background-image:radial-gradient(circle at 50% 48%, rgba(212,160,160,.9) 0%, rgba(212,160,160,.6) 60%, rgba(212,160,160,.35) 100%);
+    box-shadow:0 8px 30px rgba(212,160,160,.4);
+  }
+  .paints{display:flex;flex-wrap:wrap;gap:12px}
+  .paint{
+    width:34px;height:34px;border-radius:50%;border:1px solid rgba(212,160,160,.25);cursor:pointer;padding:0;
+    box-shadow:0 2px 12px rgba(212,160,160,.08);
+    transition:box-shadow var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .paint:hover{box-shadow:0 8px 28px rgba(212,160,160,.35)}
+  .paint:focus{outline:none}
+  .paint:focus-visible{box-shadow:0 0 0 3px rgba(212,160,160,.12)}
+  .paint[aria-pressed=true]{box-shadow:0 0 0 2px rgba(250,246,240,.9),0 8px 28px rgba(212,160,160,.45)}
+  .tiny{font-size:12.5px;color:rgba(90,62,62,.45);margin:0 0 16px;max-width:60ch}
+  .status{font-size:12.5px;color:rgba(90,62,62,.55);margin-top:14px;min-height:1.4em}
+  .dlrow{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:14px}
+  .hidden{display:none}
+  .preview{
+    width:100%;border-radius:20px;border:1px solid rgba(212,160,160,.15);
+    background:#f3ede4;box-shadow:var(--sh-sm);margin-top:16px;display:block;
+  }
+  .btn.small{font-size:13.5px;padding:.55em 1.05em}
+  .savebar{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .savebar.hidden{display:none}
+  .vline{height:1px;background:rgba(212,160,160,.15);margin:26px 0}
+
+  .styles-grid{display:grid;gap:clamp(14px,2.4vw,24px);grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .style-note{border-radius:20px;background:rgba(250,246,240,.72);border:1px solid rgba(212,160,160,.15);padding:22px;
+    box-shadow:var(--sh-sm);transition:box-shadow 700ms var(--ease), background-color 700ms var(--ease)}
+  .style-note:hover{box-shadow:var(--sh-lg);background-color:rgba(250,246,240,.95)}
+  .style-note b{display:block;font-size:15.5px;letter-spacing:.1em;margin-bottom:8px;font-weight:600}
+  .style-note span{font-size:13px;color:rgba(90,62,62,.55);line-height:1.7}
+
+  footer{background:var(--paper-2);border-top:1px solid rgba(212,160,160,.15);padding:clamp(40px,6vw,72px) 0;color:rgba(90,62,62,.55)}
+  footer .cols{display:grid;gap:28px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  footer .brand{font-size:19px;letter-spacing:.16em;color:var(--ink);font-weight:600}
+  footer p{font-size:12.5px;margin:8px 0 0;max-width:34ch}
+  footer ul{list-style:none;padding:0;margin:10px 0 0;font-size:12.5px;display:grid;gap:6px}
+  footer h4{font-size:13.5px;letter-spacing:.16em;margin:0;color:var(--ink)}
+  .copy{margin-top:34px;font-size:11.5px;color:rgba(90,62,62,.38);letter-spacing:.08em}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition-duration:1ms !important;animation:none !important}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wash"></div>
+<div class="grain"></div>
+
+<nav>
+  <div class="wrap inner">
+    <a class="logo" href="#top">Aquarelle<small>水彩音画</small></a>
+    <div class="navlinks">
+      <a href="#studio">工作室</a>
+      <a href="#styles">笔法</a>
+      <a href="#about">说明</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero wrap" id="top">
+  <svg class="leaf leaf-a" viewBox="0 0 120 200" aria-hidden="true">
+    <path d="M60 4C60 62 22 92 22 140c0 32 17 58 38 58s38-26 38-58C98 92 60 62 60 4z" fill="rgba(140,197,168,.28)"/>
+    <path d="M60 16v176M60 70 34 96M60 70l26 26M60 118 40 140M60 118l20 22" stroke="rgba(90,62,62,.16)" stroke-width="1.4" fill="none"/>
+  </svg>
+  <svg class="leaf leaf-b" viewBox="0 0 120 200" aria-hidden="true">
+    <path d="M60 4C60 62 22 92 22 140c0 32 17 58 38 58s38-26 38-58C98 92 60 62 60 4z" fill="rgba(212,160,160,.26)"/>
+    <path d="M60 16v176" stroke="rgba(90,62,62,.14)" stroke-width="1.4" fill="none"/>
+  </svg>
+
+  <h1>让声音<br>在水彩里晕开</h1>
+  <p>上传一段音频，它在纸上化成颜料：波纹、色柱、涟漪、花瓣、水滴、丝带。八种笔法随手切换，六种颜料随意调和，一键导出带声视频。</p>
+  <div class="hero-actions">
+    <button class="btn" id="heroPick">选择音频</button>
+    <span class="hint">mp3 / wav / m4a / ogg / flac · 全部在本地处理，不上传</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section>
+    <div class="studio">
+      <div class="card stage-card">
+        <div class="stage-box">
+          <canvas id="stage" width="1280" height="720"></canvas>
+          <div class="rec-badge" id="recBadge">正在录制</div>
+          <div class="drop-tip" id="dropTip">
+            <div>把音频拖到这里</div>
+            <div class="hint">或者点右边的按钮选择文件</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="studio">
+        <div class="fileline">
+          <div>
+            <span class="label">当前音频</span>
+            <span class="value" id="fileName">尚未选择</span>
+          </div>
+          <button class="btn plain" id="pickBtn">换一个</button>
+        </div>
+        <input type="file" id="fileInput" accept="audio/*" hidden>
+
+        <div class="transport">
+          <button class="btn" id="playBtn" disabled>播放</button>
+          <span class="time" id="timeLabel">0:00 / 0:00</span>
+        </div>
+        <input type="range" id="seek" min="0" max="1000" value="0" aria-label="播放进度">
+
+        <div class="block">
+          <h3>晕染笔法</h3>
+          <div class="chips" id="styleChips"></div>
+        </div>
+
+        <div class="block">
+          <h3>颜料</h3>
+          <div class="paints" id="paintRow"></div>
+        </div>
+
+        <div class="block">
+          <h3>画质</h3>
+          <div class="chips" id="resChips"></div>
+        </div>
+
+        <div class="vline"></div>
+
+        <div class="block" style="margin-top:0">
+          <h3>导出视频</h3>
+          <p class="tiny">按音频原速录制画布与音轨，导出 webm 高清视频。录制期间别切到后台，页面保持可见才不掉帧。</p>
+          <div class="dlrow">
+            <button class="btn" id="recBtn">开始录制</button>
+            <span class="hint" id="recState">未开始</span>
+          </div>
+          <video class="preview hidden" id="preview" controls playsinline></video>
+          <div class="savebar hidden" id="saveBar">
+            <button class="btn small" id="shareBtn">保存到设备</button>
+            <a class="btn ghost small" id="dlLink" download>直接下载</a>
+            <button class="btn plain small" id="openBtn">新标签打开</button>
+          </div>
+          <div class="status" id="status">准备好了。先选一个音频。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="styles">
+    <h2>八种笔法</h2>
+    <div class="styles-grid" id="stylesGrid"></div>
+  </section>
+
+  <section id="about">
+    <div class="card">
+      <h2>关于纸与颜料</h2>
+      <p class="tiny" style="max-width:70ch">
+        页面用暖调纸张底色 #faf6f0，叠一层 feTurbulence 生成的纤维颗粒；背景是几团缓慢漂移的水彩晕染，
+        边界靠多层半透明笔触和柔和阴影咬合，而不是硬边。所有交互都走「颜料渗透」的逻辑——
+        悬停时阴影向外化开，按下时像笔尖轻压湿纸，过渡比常规界面更慢。
+      </p>
+      <p class="tiny" style="max-width:70ch">
+        音频只在你的浏览器里解码，不会发往任何服务器。导出的视频由画布流与音频流实时合成，
+        所以时长与音频一致，中途拖动进度或换笔法都会被一起录下。
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <span class="brand">Aquarelle</span>
+        <p>把音频泡进水里，看它自己长出形状。</p>
+      </div>
+      <div>
+        <h4>工作室</h4>
+        <ul>
+          <li>本地解码，不外传</li>
+          <li>八笔法 · 六颜料</li>
+          <li>webm 视频导出</li>
+        </ul>
+      </div>
+      <div>
+        <h4>提示</h4>
+        <ul>
+          <li>长音频导出较慢</li>
+          <li>录制时请勿切后台</li>
+          <li>移动端建议横屏</li>
+        </ul>
+      </div>
+    </div>
+    <div class="copy">Aquarelle · watercolor visualization</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById('stage');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  var RES = [
+    {w:1280, h:720, name:'720p 高清'},
+    {w:960,  h:540, name:'540p 流畅'},
+    {w:640,  h:360, name:'360p 省电'}
+  ];
+  var resIndex = 1;
+  var PAD = 80;
+  var bgCanvas = document.createElement('canvas');
+  var bgCtx = bgCanvas.getContext('2d');
+  var barGrad = {};
+  var sprites = {};
+
+  var PALETTES = [
+    {name:'玫瑰晕染', colors:['#d4a0a0','#e6b6b6','#c98f92','#f0d2cc']},
+    {name:'天蓝',     colors:['#7bb8d4','#a6d2e6','#5f9cbd','#cfe7f0']},
+    {name:'鼠尾草绿', colors:['#8cc5a8','#b2dcc4','#6aa88c','#d8efe0']},
+    {name:'薰衣草紫', colors:['#c3a0d4','#dcc2e8','#a883bd','#eadff2']},
+    {name:'赭石金',   colors:['#e8c87a','#f2dda8','#d4ab54','#f7ecc9']},
+    {name:'混色晕开', colors:['#d4a0a0','#7bb8d4','#8cc5a8','#c3a0d4','#e8c87a']}
+  ];
+
+  var STYLES = [
+    {id:'waves',    name:'水彩波纹', note:'三层透明笔触叠出波形，边缘被湿度化开。'},
+    {id:'bars',     name:'颜料柱',   note:'频谱落到纸面，像一支支没洗干净的笔。'},
+    {id:'bloom',    name:'涟漪晕染', note:'低频驱动同心色环，一圈圈往外池化。'},
+    {id:'petals',   name:'花瓣放射', note:'围绕圆心生长的花瓣长度随频率起伏。'},
+    {id:'droplets', name:'水滴飞溅', note:'随能量迸出的颜料点，落纸后慢慢渗开。'},
+    {id:'mirror',   name:'镜像晕带', note:'上下对称的色带，中轴处颜色最深。'},
+    {id:'ribbons',  name:'流动丝带', note:'多条曲线互相穿过，像水里的颜料条。'},
+    {id:'spiral',   name:'螺旋水彩', note:'螺旋半径被频谱推开，缓慢旋转。'}
+  ];
+
+  var paletteIndex = 0;
+  var styleId = 'waves';
+
+  /* ---------- 音频 ---------- */
+  var audioCtx = null, analyser = null, gainNode = null, recDest = null;
+  var audioBuffer = null, srcNode = null;
+  var isPlaying = false, offset = 0, startedAt = 0, seeking = false;
+  var freq = null, wave = null, SB = null, energy = 0;
+  var NB = 96;
+
+  /* ---------- 录制 ---------- */
+  var mediaRecorder = null, chunks = [], recording = false;
+  var lastBlob = null, lastUrl = null, lastName = 'aquarelle.webm';
+
+  var el = {
+    fileInput: document.getElementById('fileInput'),
+    fileName: document.getElementById('fileName'),
+    playBtn: document.getElementById('playBtn'),
+    timeLabel: document.getElementById('timeLabel'),
+    seek: document.getElementById('seek'),
+    styleChips: document.getElementById('styleChips'),
+    paintRow: document.getElementById('paintRow'),
+    resChips: document.getElementById('resChips'),
+    recBtn: document.getElementById('recBtn'),
+    dlLink: document.getElementById('dlLink'),
+    shareBtn: document.getElementById('shareBtn'),
+    openBtn: document.getElementById('openBtn'),
+    preview: document.getElementById('preview'),
+    saveBar: document.getElementById('saveBar'),
+    recState: document.getElementById('recState'),
+    status: document.getElementById('status'),
+    recBadge: document.getElementById('recBadge'),
+    dropTip: document.getElementById('dropTip'),
+    stylesGrid: document.getElementById('stylesGrid')
+  };
+
+  function setStatus(t){ el.status.textContent = t; }
+
+  function fmt(s){
+    s = Math.max(0, s|0);
+    var m = (s/60)|0, r = s%60;
+    return m + ':' + (r<10?'0':'') + r;
+  }
+
+  function ensureCtx(){
+    if (!audioCtx){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.78;
+      gainNode = audioCtx.createGain();
+      recDest = audioCtx.createMediaStreamDestination();
+      analyser.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      gainNode.connect(recDest);
+      freq = new Uint8Array(analyser.frequencyBinCount);
+      wave = new Uint8Array(analyser.fftSize);
+      SB = new Float32Array(NB);
+      wave.fill(128);
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function pickMime(){
+    // vp8 排在最前：手机端 vp8 普遍有硬编/快速软编，vp9 纯软编会把 CPU 吃死
+    var list = ['video/webm;codecs=vp8,opus','video/webm;codecs=h264,opus','video/webm;codecs=vp8','video/webm','video/mp4'];
+    if (!window.MediaRecorder) return '';
+    for (var i=0;i<list.length;i++){
+      if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(list[i])) return list[i];
+    }
+    return '';
+  }
+
+  function loadFile(file){
+    if (!file) return;
+    if (!/^audio\//.test(file.type) && !/\.(mp3|wav|m4a|ogg|flac|aac|opus|webm)$/i.test(file.name)){
+      setStatus('这个不是音频文件。');
+      return;
+    }
+    ensureCtx();
+    setStatus('正在解码…');
+    el.fileName.textContent = file.name;
+    var fr = new FileReader();
+    fr.onload = function(){
+      var buf = fr.result.slice(0);
+      audioCtx.decodeAudioData(buf, function(decoded){
+        audioBuffer = decoded;
+        offset = 0; stopSource();
+        el.playBtn.disabled = false;
+        el.playBtn.textContent = '播放';
+        el.seek.value = 0;
+        el.timeLabel.textContent = '0:00 / ' + fmt(decoded.duration);
+        el.dropTip.classList.add('hide');
+        setStatus('已载入 ' + fmt(decoded.duration) + '，点播放开始晕染。');
+      }, function(){
+        setStatus('解码失败，换个格式试试。');
+      });
+    };
+    fr.onerror = function(){ setStatus('读文件出错了。'); };
+    fr.readAsArrayBuffer(file);
+  }
+
+  function stopSource(){
+    if (srcNode){
+      try { srcNode.onended = null; srcNode.stop(); } catch(e){}
+      try { srcNode.disconnect(); } catch(e){}
+      srcNode = null;
+    }
+  }
+
+  function play(at){
+    if (!audioBuffer) return;
+    ensureCtx();
+    stopSource();
+    at = Math.max(0, Math.min(at, audioBuffer.duration - 0.02));
+    srcNode = audioCtx.createBufferSource();
+    srcNode.buffer = audioBuffer;
+    srcNode.connect(analyser);
+    srcNode.start(0, at);
+    startedAt = audioCtx.currentTime;
+    offset = at;
+    isPlaying = true;
+    el.playBtn.textContent = '暂停';
+  }
+
+  function pause(){
+    if (!isPlaying) return;
+    offset = Math.min(audioBuffer.duration, offset + (audioCtx.currentTime - startedAt));
+    stopSource();
+    isPlaying = false;
+    el.playBtn.textContent = '播放';
+  }
+
+  function togglePlay(){
+    if (!audioBuffer) return;
+    if (isPlaying) pause(); else play(offset >= audioBuffer.duration - 0.05 ? 0 : offset);
+  }
+
+  function currentTime(){
+    if (!audioBuffer) return 0;
+    return isPlaying ? Math.min(audioBuffer.duration, offset + (audioCtx.currentTime - startedAt)) : offset;
+  }
+
+  /* ---------- 录制 ---------- */
+  function startRecording(){
+    if (!audioBuffer){ setStatus('先选一个音频。'); return; }
+    if (!window.MediaRecorder){ setStatus('这个浏览器不支持录制，换个 Chrome 内核的试试。'); return; }
+    ensureCtx();
+    var stream = canvas.captureStream(30);
+    var mixed = new MediaStream();
+    stream.getVideoTracks().forEach(function(t){ mixed.addTrack(t); });
+    recDest.stream.getAudioTracks().forEach(function(t){ mixed.addTrack(t); });
+
+    var opts = { videoBitsPerSecond: 3500000, audioBitsPerSecond: 128000 };
+    var mime = pickMime();
+    if (mime) opts.mimeType = mime;
+
+    try { mediaRecorder = new MediaRecorder(mixed, opts); }
+    catch(e){ mediaRecorder = new MediaRecorder(mixed); }
+
+    chunks = [];
+    mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size) chunks.push(e.data); };
+    mediaRecorder.onstop = function(){
+      recording = false;
+      el.recBadge.classList.remove('on');
+      el.recBtn.textContent = '开始录制';
+      el.recState.textContent = '未开始';
+      var type = (chunks[0] && chunks[0].type) || 'video/webm';
+      lastBlob = new Blob(chunks, {type: type});
+      lastName = 'aquarelle-' + styleId + '-' + Date.now() + (type.indexOf('mp4') >= 0 ? '.mp4' : '.webm');
+      if (lastUrl) URL.revokeObjectURL(lastUrl);
+      lastUrl = URL.createObjectURL(lastBlob);
+      el.dlLink.href = lastUrl;
+      el.dlLink.download = lastName;
+      el.dlLink.textContent = '直接下载 (' + (lastBlob.size/1048576).toFixed(1) + 'MB)';
+      el.preview.src = lastUrl;
+      el.preview.classList.remove('hidden');
+      el.saveBar.classList.remove('hidden');
+      setStatus('录制完成，' + (lastBlob.size/1048576).toFixed(1) + 'MB。先预览确认，再点「保存到设备」。');
+    };
+
+    el.preview.pause();
+    el.preview.classList.add('hidden');
+    el.saveBar.classList.add('hidden');
+    mediaRecorder.start(250);
+    recording = true;
+    el.recBadge.classList.add('on');
+    el.recBtn.textContent = '停止录制';
+    el.recState.textContent = '录制中';
+    setStatus('正在录制，请保持页面可见。');
+    pause();
+    offset = 0;
+    play(0);
+  }
+
+  function stopRecording(){
+    if (mediaRecorder && mediaRecorder.state !== 'inactive'){
+      try { mediaRecorder.stop(); } catch(e){}
+    }
+  }
+
+  function doDownload(){
+    if (!lastUrl){ setStatus('还没有录好的视频。'); return; }
+    var a = document.createElement('a');
+    a.href = lastUrl;
+    a.download = lastName;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ if (a.parentNode) a.parentNode.removeChild(a); }, 800);
+    setStatus('已触发下载。若进度条一直不动，说明当前浏览器不支持直下 blob，改用「保存到设备」或换 Chrome 打开本页。');
+  }
+
+  function saveVideo(){
+    if (!lastBlob){ setStatus('还没有录好的视频。'); return; }
+    var f = new File([lastBlob], lastName, {type: lastBlob.type || 'video/webm'});
+    if (navigator.canShare && navigator.share && navigator.canShare({files:[f]})){
+      navigator.share({files:[f], title: lastName})
+        .then(function(){ setStatus('已交给系统保存，去相册或者「下载」里看看。'); })
+        .catch(function(){ setStatus('分享被取消了。也可以试「直接下载」。'); });
+      return;
+    }
+    if (window.showSaveFilePicker){
+      showSaveFilePicker({suggestedName: lastName})
+        .then(function(h){ return h.createWritable(); })
+        .then(function(w){ return w.write(lastBlob).then(function(){ return w.close(); }); })
+        .then(function(){ setStatus('已保存到你选择的位置。'); })
+        .catch(function(){ setStatus('保存取消或失败了。'); });
+      return;
+    }
+    doDownload();
+  }
+
+  function openBlob(){
+    if (!lastUrl){ setStatus('还没有录好的视频。'); return; }
+    window.open(lastUrl, '_blank');
+    setStatus('已在新标签打开，长按画面即可保存。');
+  }
+
+  /* ---------- 画布 ---------- */
+  /* 纸面晕染只在分辨率变化时烘焙一次，之后每帧只贴一张图，省掉每帧 5 次全屏混合 */
+  function buildBg(){
+    bgCanvas.width = W + PAD*2;
+    bgCanvas.height = H + PAD*2;
+    bgCtx.setTransform(1,0,0,1,0,0);
+    bgCtx.globalCompositeOperation = 'source-over';
+    bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+    bgCtx.fillStyle = '#faf6f0';
+    bgCtx.fillRect(0,0,bgCanvas.width,bgCanvas.height);
+    bgCtx.translate(PAD,PAD);
+    bgCtx.globalCompositeOperation = 'multiply';
+    var spots = [
+      [0.16,0.22,'212,160,160'],
+      [0.84,0.20,'123,184,212'],
+      [0.72,0.84,'195,160,212'],
+      [0.20,0.82,'140,197,168'],
+      [0.50,0.50,'232,200,122']
+    ];
+    for (var i=0;i<spots.length;i++){
+      var s = spots[i];
+      var g = bgCtx.createRadialGradient(s[0]*W, s[1]*H, 0, s[0]*W, s[1]*H, W*0.5);
+      g.addColorStop(0, 'rgba(' + s[2] + ',0.24)');
+      g.addColorStop(0.5, 'rgba(' + s[2] + ',0.1)');
+      g.addColorStop(1, 'rgba(' + s[2] + ',0)');
+      bgCtx.fillStyle = g;
+      bgCtx.fillRect(-PAD,-PAD, W+PAD*2, H+PAD*2);
+    }
+    bgCtx.globalCompositeOperation = 'source-over';
+    bgCtx.setTransform(1,0,0,1,0,0);
+  }
+
+  function rr(x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function drawBackground(t){
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    var dx = Math.sin(t*0.00013)*34;
+    var dy = Math.cos(t*0.00017)*24;
+    ctx.drawImage(bgCanvas, PAD-dx, PAD-dy, W, H, 0, 0, W, H);
+  }
+
+  function bandAt(p){
+    p = Math.max(0, Math.min(1, p));
+    var idx = p * (NB-1);
+    var i0 = Math.floor(idx), i1 = Math.min(NB-1, i0+1), f = idx - i0;
+    return SB[i0]*(1-f) + SB[i1]*f;
+  }
+
+  function updateSpectrum(){
+    if (!analyser) return;
+    if (isPlaying){
+      analyser.getByteFrequencyData(freq);
+      analyser.getByteTimeDomainData(wave);
+    } else {
+      for (var i=0;i<freq.length;i++) freq[i] *= 0.93;
+      for (var j=0;j<wave.length;j++) wave[j] = 128 + (wave[j]-128)*0.9;
+    }
+    var maxBin = Math.floor(freq.length*0.72);
+    var k = isPlaying ? 0.34 : 0.12;
+    for (var b=0;b<NB;b++){
+      var lo = Math.floor(Math.pow(b/NB, 1.7)*maxBin);
+      var hi = Math.max(lo+1, Math.floor(Math.pow((b+1)/NB, 1.7)*maxBin));
+      var s = 0;
+      for (var m=lo;m<hi;m++) s += freq[m];
+      var v = s/(hi-lo)/255;
+      SB[b] += (v - SB[b]) * k;
+    }
+    var e = 0;
+    for (var q=0;q<10;q++) e += SB[q];
+    e = Math.min(1, (e/10)*1.5);
+    energy += (e - energy) * 0.22;
+  }
+
+  /* ---------- 八种笔法 ---------- */
+  function paintWaves(t, colors){
+    var n = wave.length;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (var L=0; L<3; L++){
+      var col = colors[L % colors.length];
+      var amp = H*0.19 * (1 - L*0.24);
+      ctx.beginPath();
+      for (var i=0;i<n;i+=2){
+        var x = i/(n-1)*W;
+        var v = (wave[i]-128)/128;
+        var y = H*0.5 + v*amp + Math.sin(i*0.018 + t*0.0012 + L*1.6)*12;
+        if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = col;
+      ctx.globalAlpha = 0.1;
+      ctx.lineWidth = 30 - L*7;
+      ctx.stroke();
+      ctx.globalAlpha = 0.34;
+      ctx.lineWidth = 13 - L*3.5;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function paintBars(t, colors){
+    var bars = 56;
+    var bw = W/bars;
+    var base = H*0.86;
+    for (var b=0;b<bars;b++){
+      var v = bandAt(Math.pow(b/bars, 0.9));
+      v = Math.pow(v, 0.85);
+      var hgt = Math.max(6, v*H*0.62);
+      var x = b*bw + bw*0.18;
+      var w = bw*0.64;
+      var col = colors[b % colors.length];
+      if (!barGrad[col]){
+        var g = ctx.createLinearGradient(0, H*0.24, 0, base);
+        g.addColorStop(0, col);
+        g.addColorStop(1, 'rgba(250,246,240,0.25)');
+        barGrad[col] = g;
+      }
+      ctx.fillStyle = barGrad[col];
+      ctx.globalAlpha = 0.72;
+      rr(x, base-hgt, w, hgt, w/2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function paintBloom(t, colors){
+    var base = Math.min(W,H)*0.09 + energy*Math.min(W,H)*0.20;
+    for (var i=5;i>=1;i--){
+      var r = base * i * 0.86 + Math.sin(t*0.0018 + i)*8;
+      var col = colors[i % colors.length];
+      var g = ctx.createRadialGradient(W/2, H/2, Math.max(1, r*0.5), W/2, H/2, r);
+      g.addColorStop(0, 'rgba(250,246,240,0)');
+      g.addColorStop(0.72, col + '00');
+      g.addColorStop(1, col);
+      ctx.globalAlpha = 0.16 + (6-i)*0.05;
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(W/2, H/2, r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function paintPetals(t, colors){
+    var N = 80, cx = W/2, cy = H/2;
+    var r0 = Math.min(W,H)*0.17;
+    ctx.lineCap = 'round';
+    for (var i=0;i<N;i++){
+      var a = (i/N)*Math.PI*2 - Math.PI/2 + Math.sin(t*0.0004)*0.06;
+      var v = bandAt(i/N);
+      var len = Math.max(5, v*Math.min(W,H)*0.32);
+      var col = colors[i % colors.length];
+      var x0 = cx + Math.cos(a)*r0, y0 = cy + Math.sin(a)*r0;
+      var x1 = cx + Math.cos(a)*(r0+len), y1 = cy + Math.sin(a)*(r0+len);
+      ctx.strokeStyle = col;
+      ctx.beginPath();
+      ctx.moveTo(x0,y0);
+      ctx.lineTo(x1,y1);
+      ctx.globalAlpha = 0.13;
+      ctx.lineWidth = 20;
+      ctx.stroke();
+      ctx.globalAlpha = 0.45;
+      ctx.lineWidth = 7;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  var drops = [];
+  /* 每个颜色只烘一张晕点贴图，之后全是 drawImage，不再每帧建渐变 */
+  function spriteFor(col){
+    if (sprites[col]) return sprites[col];
+    var s = document.createElement('canvas');
+    s.width = s.height = 128;
+    var c = s.getContext('2d');
+    var g = c.createRadialGradient(64,64,0,64,64,64);
+    g.addColorStop(0, col);
+    g.addColorStop(0.45, col + '88');
+    g.addColorStop(1, col + '00');
+    c.fillStyle = g;
+    c.fillRect(0,0,128,128);
+    sprites[col] = s;
+    return s;
+  }
+
+  function paintDroplets(t, dt, colors){
+    var spawn = energy > 0.1 ? Math.min(3, Math.round(energy*5)) : 0;
+    for (var s=0;s<spawn;s++){
+      var a = Math.random()*Math.PI*2;
+      var sp = (0.6 + Math.random()*1.8) * (0.5 + energy*2);
+      drops.push({
+        x: W/2, y: H/2,
+        vx: Math.cos(a)*sp, vy: Math.sin(a)*sp*0.7,
+        r: 6 + Math.random()*26,
+        col: colors[(Math.random()*colors.length)|0],
+        life: 1
+      });
+    }
+    for (var i=drops.length-1;i>=0;i--){
+      var d = drops[i];
+      d.x += d.vx * dt*0.06;
+      d.y += d.vy * dt*0.06;
+      d.vy += 0.012 * dt*0.06;
+      d.r += dt*0.02;
+      d.life -= dt*0.00055;
+      if (d.life <= 0){ drops.splice(i,1); continue; }
+      var sz = d.r*2.4;
+      ctx.globalAlpha = Math.max(0, d.life) * 0.45;
+      ctx.drawImage(spriteFor(d.col), d.x - sz/2, d.y - sz/2, sz, sz);
+    }
+    if (drops.length > 260) drops.splice(0, drops.length-260);
+    ctx.globalAlpha = 1;
+  }
+
+  function paintMirror(t, colors){
+    var n = wave.length;
+    var mid = H/2;
+    for (var pass=0; pass<2; pass++){
+      var k = pass === 0 ? 0.72 : 1;
+      for (var side=0; side<2; side++){
+        var sign = side === 0 ? -1 : 1;
+        var col = colors[side % colors.length];
+        ctx.beginPath();
+        ctx.moveTo(0, mid);
+        for (var i=0;i<n;i+=2){
+          var x = i/(n-1)*W;
+          var v = (wave[i]-128)/128;
+          var vt = SB[Math.min(NB-1, ((i/n)*NB)|0)];
+          var y = mid + sign*Math.abs(v)*(H*0.13)*k + sign*vt*H*0.24*k;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(W, mid);
+        ctx.closePath();
+        var g = ctx.createLinearGradient(0, mid - H*0.4, 0, mid + H*0.4);
+        g.addColorStop(0, col + '00');
+        g.addColorStop(0.5, col);
+        g.addColorStop(1, col + '00');
+        ctx.globalAlpha = pass === 0 ? 0.16 : 0.32;
+        ctx.fillStyle = g;
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function paintRibbons(t, colors){
+    ctx.lineCap = 'round';
+    for (var L=0; L<3; L++){
+      var col = colors[L % colors.length];
+      ctx.beginPath();
+      for (var x=0; x<=W; x+=6){
+        var p = x/W;
+        var b = bandAt(p);
+        var drift = Math.sin(p*5.2 + L*2.1 + t*0.0013)*46;
+        var y = H*(0.34 + L*0.16) + drift + (L%2 ? -1 : 1)*b*H*0.22;
+        if (x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = col;
+      ctx.globalAlpha = 0.09;
+      ctx.lineWidth = 40 - L*8;
+      ctx.stroke();
+      ctx.globalAlpha = 0.26;
+      ctx.lineWidth = 16 - L*4;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  var gradCache = {};
+  function lineGrad(colors){
+    var key = colors[0] + colors[1 % colors.length] + colors[2 % colors.length];
+    if (!gradCache[key]){
+      var g = ctx.createLinearGradient(0,0,W,H);
+      g.addColorStop(0, colors[0]);
+      g.addColorStop(0.5, colors[1 % colors.length]);
+      g.addColorStop(1, colors[2 % colors.length]);
+      gradCache[key] = g;
+    }
+    return gradCache[key];
+  }
+
+  function paintSpiral(t, colors){
+    var turns = 5.5;
+    var maxR = Math.min(W,H)*0.46;
+    var steps = 460;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (var i=0;i<=steps;i++){
+      var p = i/steps;
+      var a = p*Math.PI*2*turns + t*0.0007;
+      var b = bandAt(1-p);
+      var r = Math.min(W,H)*0.04 + p*maxR + b*70;
+      var x = W/2 + Math.cos(a)*r*1.25;
+      var y = H/2 + Math.sin(a)*r;
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = lineGrad(colors);
+    ctx.globalAlpha = 0.1;
+    ctx.lineWidth = 34;
+    ctx.stroke();
+    ctx.globalAlpha = 0.32;
+    ctx.lineWidth = 14;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---------- 主循环 ---------- */
+  var lastT = performance.now();
+  function loop(now){
+    requestAnimationFrame(loop);
+    var dt = Math.min(50, now - lastT);
+    lastT = now;
+
+    if (audioBuffer && isPlaying){
+      var ct = currentTime();
+      if (ct >= audioBuffer.duration - 0.04){
+        isPlaying = false;
+        stopSource();
+        offset = audioBuffer.duration;
+        el.playBtn.textContent = '播放';
+        if (recording) stopRecording();
+      }
+      if (!seeking) el.seek.value = Math.round(ct/audioBuffer.duration*1000);
+      el.timeLabel.textContent = fmt(ct) + ' / ' + fmt(audioBuffer.duration);
+    }
+
+    updateSpectrum();
+
+    var colors = PALETTES[paletteIndex].colors;
+    drawBackground(now);
+    ctx.save();
+    if (styleId === 'waves')    paintWaves(now, colors);
+    if (styleId === 'bars')     paintBars(now, colors);
+    if (styleId === 'bloom')    paintBloom(now, colors);
+    if (styleId === 'petals')   paintPetals(now, colors);
+    if (styleId === 'droplets') paintDroplets(now, dt, colors);
+    if (styleId === 'mirror')   paintMirror(now, colors);
+    if (styleId === 'ribbons')  paintRibbons(now, colors);
+    if (styleId === 'spiral')   paintSpiral(now, colors);
+    ctx.restore();
+  }
+
+  /* ---------- 界面 ---------- */
+  function buildChips(){
+    STYLES.forEach(function(s){
+      var b = document.createElement('button');
+      b.className = 'chip';
+      b.type = 'button';
+      b.textContent = s.name;
+      b.setAttribute('aria-pressed', s.id === styleId ? 'true' : 'false');
+      b.addEventListener('click', function(){
+        styleId = s.id;
+        Array.prototype.forEach.call(el.styleChips.children, function(c){
+          c.setAttribute('aria-pressed', c === b ? 'true' : 'false');
+        });
+        setStatus('笔法：' + s.name + '。' + s.note);
+      });
+      el.styleChips.appendChild(b);
+    });
+  }
+
+  function buildPaints(){
+    PALETTES.forEach(function(p, i){
+      var b = document.createElement('button');
+      b.className = 'paint';
+      b.type = 'button';
+      b.title = p.name;
+      b.setAttribute('aria-label', p.name);
+      b.setAttribute('aria-pressed', i === paletteIndex ? 'true' : 'false');
+      b.style.backgroundImage = 'radial-gradient(circle at 34% 30%, ' + p.colors[0] + ', ' + p.colors[1] + ' 60%, ' + p.colors[2] + ')';
+      b.addEventListener('click', function(){
+        paletteIndex = i;
+        Array.prototype.forEach.call(el.paintRow.children, function(c){
+          c.setAttribute('aria-pressed', c === b ? 'true' : 'false');
+        });
+        setStatus('颜料：' + p.name + '。');
+      });
+      el.paintRow.appendChild(b);
+    });
+  }
+
+  function setRes(i, silent){
+    resIndex = i;
+    var R = RES[i];
+    canvas.width = R.w;
+    canvas.height = R.h;
+    W = canvas.width;
+    H = canvas.height;
+    barGrad = {};
+    gradCache = {};
+    buildBg();
+    if (!silent) setStatus('画质：' + R.name + '。手机录制建议用 540p。');
+  }
+
+  function buildRes(){
+    RES.forEach(function(r, i){
+      var b = document.createElement('button');
+      b.className = 'chip';
+      b.type = 'button';
+      b.textContent = r.name;
+      b.setAttribute('aria-pressed', i === resIndex ? 'true' : 'false');
+      b.addEventListener('click', function(){
+        if (recording){ setStatus('录制中别改画质，会花。'); return; }
+        setRes(i);
+        Array.prototype.forEach.call(el.resChips.children, function(c){
+          c.setAttribute('aria-pressed', c === b ? 'true' : 'false');
+        });
+      });
+      el.resChips.appendChild(b);
+    });
+  }
+
+  function buildNotes(){
+    STYLES.forEach(function(s){
+      var d = document.createElement('div');
+      d.className = 'style-note';
+      var b = document.createElement('b');
+      b.textContent = s.name;
+      var sp = document.createElement('span');
+      sp.textContent = s.note;
+      d.appendChild(b); d.appendChild(sp);
+      el.stylesGrid.appendChild(d);
+    });
+  }
+
+  /* ---------- 事件 ---------- */
+  document.getElementById('heroPick').addEventListener('click', function(){ el.fileInput.click(); });
+  document.getElementById('pickBtn').addEventListener('click', function(){ el.fileInput.click(); });
+  el.fileInput.addEventListener('change', function(e){ loadFile(e.target.files[0]); });
+  el.playBtn.addEventListener('click', togglePlay);
+
+  el.seek.addEventListener('input', function(){
+    if (!audioBuffer) return;
+    seeking = true;
+    var t = el.seek.value/1000*audioBuffer.duration;
+    el.timeLabel.textContent = fmt(t) + ' / ' + fmt(audioBuffer.duration);
+    offset = t;
+    if (isPlaying) play(t);
+  });
+  el.seek.addEventListener('change', function(){ seeking = false; });
+  el.seek.addEventListener('pointerup', function(){ seeking = false; });
+
+  el.recBtn.addEventListener('click', function(){
+    if (recording) stopRecording(); else startRecording();
+  });
+  el.shareBtn.addEventListener('click', saveVideo);
+  el.openBtn.addEventListener('click', openBlob);
+  el.dlLink.addEventListener('click', function(e){
+    if (!lastUrl){ e.preventDefault(); setStatus('还没有录好的视频。'); }
+  });
+
+  ['dragenter','dragover'].forEach(function(ev){
+    document.addEventListener(ev, function(e){
+      e.preventDefault();
+      el.dropTip.classList.remove('hide');
+    });
+  });
+  ['dragleave','drop'].forEach(function(ev){
+    document.addEventListener(ev, function(e){
+      e.preventDefault();
+      if (e.type === 'drop' && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+      if (audioBuffer) el.dropTip.classList.add('hide');
+    });
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON'){
+      e.preventDefault();
+      togglePlay();
+    }
+  });
+
+  buildChips();
+  buildPaints();
+  buildNotes();
+  buildRes();
+  setRes(resIndex, true);
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
