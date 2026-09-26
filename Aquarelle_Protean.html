@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="korean">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Aquarelle Protean · 八面音画</title>
+<style>
+  /* ============ 基础变量（韩式极简为默认） ============ */
+  :root{
+    --dur:700ms;
+    --ease:ease-in-out;
+    --gap:clamp(20px,3.2vw,44px);
+    --page-pad:clamp(18px,4vw,48px);
+    --maxw:1160px;
+    --radius:24px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;
+    background:var(--bg,#faf9f7);
+    color:var(--ink,#3d4a5c);
+    font-family:var(--font,system-ui,-apple-system,"Noto Sans SC",sans-serif);
+    letter-spacing:var(--track,0);
+    font-weight:var(--weight,400);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    transition:background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .hidden{display:none !important}
+
+  .app{
+    display:grid;
+    grid-template-columns:var(--cols);
+    grid-template-areas:var(--areas);
+    gap:var(--gap);
+    padding:var(--page-pad);
+    max-width:var(--maxw);
+    margin:0 auto;
+    align-items:start;
+    position:relative;
+    z-index:1;
+  }
+  .topbar{grid-area:topbar;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .stagewrap{grid-area:stage;min-width:0}
+  .panel{grid-area:panel;min-width:0}
+
+  /* ============ 品牌 & 主题条 ============ */
+  .brand{
+    font-size:20px;letter-spacing:.18em;font-weight:var(--brand-weight,400);
+    color:var(--ink);display:flex;flex-direction:column;line-height:1.2;
+  }
+  .brand span{font-size:10.5px;letter-spacing:.34em;color:var(--muted);margin-top:4px}
+
+  .themebar{display:flex;flex-wrap:wrap;gap:var(--theme-gap,8px);align-items:center}
+  .tbtn{
+    font:inherit;font-size:12.5px;letter-spacing:.1em;cursor:pointer;
+    color:var(--muted);background:transparent;
+    border:var(--theme-border,0);border-bottom:1px solid transparent;
+    padding:var(--theme-pad,4px 2px);
+    border-radius:var(--theme-radius,0);
+    transition:all var(--dur) var(--ease);
+  }
+  .tbtn:hover{color:var(--ink)}
+  .tbtn[aria-pressed="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+  .tbtn:focus{outline:none}
+  .tbtn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+  /* ============ 舞台 ============ */
+  .stagetop{margin:0 0 clamp(12px,2vw,24px)}
+  .title{
+    margin:0;font-size:var(--title-size,clamp(26px,4.4vw,44px));
+    font-weight:var(--title-weight,300);letter-spacing:var(--title-track,.04em);
+    line-height:1.15;color:var(--ink);
+  }
+  .subtitle{margin:10px 0 0;font-size:13.5px;color:var(--muted);max-width:44ch;letter-spacing:.04em}
+
+  .stage{
+    position:relative;overflow:hidden;
+    border-radius:var(--radius);
+    border:var(--stage-border,1px solid rgba(61,74,92,.08));
+    box-shadow:var(--stage-shadow,0 8px 24px rgba(61,74,92,.08));
+    background:var(--stage-bg,#faf9f7);
+    transition:box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .stage canvas{display:block;width:100%;height:auto;aspect-ratio:16/9}
+
+  .recdot{
+    position:absolute;left:14px;top:14px;display:flex;align-items:center;gap:7px;
+    font-size:11px;letter-spacing:.2em;padding:.3em .8em;border-radius:999px;
+    background:rgba(0,0,0,.28);color:#fff;opacity:0;
+    transition:opacity var(--dur) var(--ease);
+  }
+  .recdot i{width:7px;height:7px;border-radius:50%;background:#ff5a7a;display:block}
+  .recdot.on{opacity:1}
+
+  .drop{
+    position:absolute;inset:0;display:grid;place-content:center;text-align:center;
+    font-size:13.5px;letter-spacing:.14em;color:var(--muted);padding:20px;
+    background:var(--drop-bg,radial-gradient(60% 60% at 50% 50%,rgba(61,74,92,.05),transparent 75%));
+    transition:opacity var(--dur) var(--ease);
+  }
+  .drop.hide{opacity:0;pointer-events:none}
+
+  /* ============ 面板 ============ */
+  .panel{
+    display:flex;flex-direction:column;gap:var(--panel-gap,20px);
+    padding:var(--panel-pad,clamp(18px,2.6vw,30px));
+    border-radius:var(--radius);
+    background:var(--card-bg,transparent);
+    border:var(--panel-border,1px solid rgba(61,74,92,.08));
+    box-shadow:var(--panel-shadow,none);
+    transition:all var(--dur) var(--ease);
+  }
+  .field{display:flex;flex-direction:column;gap:9px;min-width:0}
+  .lab{font-size:11px;letter-spacing:.24em;color:var(--muted)}
+  .val{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .transport{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .time{font-size:12.5px;color:var(--muted);letter-spacing:.06em}
+
+  .chips{display:flex;flex-wrap:wrap;gap:var(--chip-gap,9px)}
+
+  .btn{
+    font:inherit;font-size:13.5px;letter-spacing:var(--btn-track,0);cursor:pointer;
+    color:var(--btn-ink,var(--ink));background:var(--btn-bg,transparent);
+    border:var(--btn-border,1px solid rgba(61,74,92,.18));
+    border-radius:var(--btn-radius,14px);
+    padding:var(--btn-pad,.58em 1.15em);
+    box-shadow:var(--btn-shadow,none);
+    text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
+    transition:all var(--dur) var(--ease);
+    min-height:38px;
+  }
+  .btn:hover{background:var(--btn-bg-hover,var(--btn-bg,transparent));transform:var(--btn-hover-tf,none);box-shadow:var(--btn-hover-shadow,none)}
+  .btn:active{transform:var(--btn-active-tf,none);box-shadow:var(--btn-active-shadow,none)}
+  .btn:focus{outline:none}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .btn[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+  .btn.main{font-size:14.5px;padding:.62em 1.4em}
+
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:var(--track,rgba(61,74,92,.16))}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:12px;height:12px;border-radius:50%;margin-top:-4.5px;
+    background:var(--accent);border:none;box-shadow:0 0 0 0 transparent;
+    transition:box-shadow var(--dur) var(--ease);
+  }
+  input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 6px var(--thumb-halo,rgba(61,74,92,.08))}
+  input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:var(--track,rgba(61,74,92,.16))}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:none;border-radius:50%;background:var(--accent)}
+  input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+
+  .preview{width:100%;border-radius:var(--preview-radius,14px);border:var(--panel-border,1px solid rgba(61,74,92,.1));display:block;background:#000}
+  .status{font-size:12px;color:var(--muted);margin:0;min-height:1.5em;letter-spacing:.03em}
+
+  /* ============ 装饰层（各主题各自定义） ============ */
+  .deco{position:fixed;pointer-events:none;z-index:0;opacity:var(--deco-opacity,0)}
+  .deco-a{left:-8vw;top:-10vh;width:52vw;height:52vw}
+  .deco-b{right:-10vw;top:22vh;width:44vw;height:44vw}
+  .deco-c{left:24vw;bottom:-16vh;width:40vw;height:40vw}
+
+  /* ================================================================
+     1 · 韩式极简
+     ================================================================ */
+  html[data-theme="korean"]{
+    --bg:#faf9f7;--ink:#3d4a5c;--muted:rgba(61,74,92,.5);
+    --accent:#3d4a5c;--accent2:#d4a5a5;
+    --card-bg:rgba(255,255,255,.72);
+    --font:system-ui,-apple-system,"Helvetica Neue","Noto Sans SC",sans-serif;
+    --weight:300;--track:.01em;
+    --dur:700ms;--radius:28px;
+    --cols:minmax(0,700px);--areas:"topbar" "stage" "panel";
+    --maxw:840px;--gap:clamp(30px,6vw,72px);--page-pad:clamp(26px,7vw,84px);
+    --panel-pad:clamp(22px,4vw,40px);--panel-gap:26px;
+    --stage-border:1px solid rgba(61,74,92,.08);
+    --stage-shadow:0 8px 24px rgba(61,74,92,.08);
+    --btn-radius:24px;--btn-border:1px solid rgba(61,74,92,.12);
+    --btn-bg-hover:#fff;--btn-shadow:none;
+    --btn-hover-tf:translateY(-1px);--btn-hover-shadow:0 4px 12px rgba(61,74,92,.06);
+    --btn-active-tf:scale(.98);
+    --track:rgba(61,74,92,.14);--thumb-halo:rgba(212,165,165,.16);
+    --title-weight:200;--theme-gap:16px;--chip-gap:10px;
+    --drop-bg:radial-gradient(60% 60% at 50% 50%,rgba(168,197,184,.16),transparent 75%);
+  }
+  html[data-theme="korean"] .app{justify-content:center}
+  html[data-theme="korean"] .stagetop{text-align:left;padding-left:2px}
+  html[data-theme="korean"] .panel{border-color:rgba(61,74,92,.06);box-shadow:0 4px 12px rgba(61,74,92,.05)}
+
+  /* ================================================================
+     2 · 超现实主义
+     ================================================================ */
+  html[data-theme="surreal"]{
+    --bg:linear-gradient(165deg,#131331 0%,#1a1a3e 42%,#2a1d3e 78%,#241b33 100%);
+    --ink:#f0ece4;--muted:rgba(240,236,228,.6);
+    --accent:#d4a574;--accent2:#c38d94;
+    --card-bg:rgba(240,236,228,.05);
+    --font:Georgia,"Songti SC","Noto Serif SC",serif;
+    --weight:400;--track:.02em;
+    --dur:900ms;--radius:30px;
+    --cols:1.85fr 1fr;--areas:"topbar topbar" "stage panel";
+    --maxw:1180px;--gap:clamp(24px,4vw,56px);--page-pad:clamp(20px,5vw,64px);
+    --panel-pad:clamp(20px,3vw,34px);--panel-gap:22px;
+    --stage-border:1px solid rgba(212,165,116,.3);
+    --stage-shadow:0 24px 70px rgba(195,141,148,.22);
+    --panel-border:1px solid rgba(212,165,116,.22);
+    --panel-shadow:0 18px 60px rgba(195,141,148,.14);
+    --btn-radius:42% 58% 55% 45% / 55% 45% 58% 42%;
+    --btn-pad:.72em 1.5em;
+    --btn-border:1px solid rgba(212,165,116,.36);
+    --btn-ink:#f0ece4;
+    --btn-bg:rgba(212,165,116,.08);
+    --btn-bg-hover:rgba(195,141,148,.14);
+    --btn-shadow:0 8px 30px rgba(195,141,148,.12);
+    --btn-hover-tf:skewX(-2deg) rotate(-2deg);
+    --btn-hover-shadow:0 0 50px rgba(195,141,148,.35);
+    --btn-active-tf:skewX(2deg) rotate(1deg);
+    --track:rgba(212,165,116,.28);--thumb-halo:rgba(195,141,148,.22);
+    --title-size:clamp(30px,5vw,58px);--title-weight:400;
+    --theme-gap:10px;--theme-radius:20px 20px 8px 8px;--theme-pad:3px 9px;
+    --drop-bg:radial-gradient(60% 60% at 50% 50%,rgba(195,141,148,.16),transparent 75%);
+    --deco-opacity:1;
+  }
+  html[data-theme="surreal"] .title{font-style:italic;letter-spacing:.02em}
+  html[data-theme="surreal"] .brand{font-style:italic}
+  html[data-theme="surreal"] .subtitle{font-style:italic}
+  html[data-theme="surreal"] .stagetop{transform:translateY(6px)}
+  html[data-theme="surreal"] .panel{margin-top:clamp(30px,7vw,90px);transform:rotate(-1deg)}
+  html[data-theme="surreal"] .tbtn{border:1px solid rgba(212,165,116,.28);background:rgba(240,236,228,.04)}
+  html[data-theme="surreal"] .tbtn[aria-pressed="true"]{background:rgba(195,141,148,.18);border-color:rgba(195,141,148,.5);box-shadow:0 0 26px rgba(195,141,148,.28)}
+  html[data-theme="surreal"] .deco-a,
+  html[data-theme="surreal"] .deco-b,
+  html[data-theme="surreal"] .deco-c{
+    background:radial-gradient(circle at 40% 40%,rgba(195,141,148,.5),rgba(195,141,148,0) 62%);
+    filter:blur(50px);animation:melt 26s var(--ease) infinite alternate;
+  }
+  html[data-theme="surreal"] .deco-b{background:radial-gradient(circle at 55% 45%,rgba(212,165,116,.42),rgba(212,165,116,0) 60%);animation-duration:34s}
+  html[data-theme="surreal"] .deco-c{background:radial-gradient(circle at 45% 55%,rgba(139,109,181,.34),rgba(139,109,181,0) 62%);animation-duration:42s}
+  @keyframes melt{
+    0%{transform:translate3d(0,0,0) scale(1)}
+    50%{transform:translate3d(4vw,3vh,0) scale(1.18)}
+    100%{transform:translate3d(-3vw,5vh,0) scale(1.05)}
+  }
+
+  /* ================================================================
+     3 · 千禧 Y2K
+     ================================================================ */
+  html[data-theme="y2k"]{
+    --bg:
+      radial-gradient(circle at 18% 8%,rgba(255,105,180,.32),transparent 58%),
+      radial-gradient(circle at 86% 16%,rgba(0,255,255,.3),transparent 55%),
+      radial-gradient(circle at 62% 92%,rgba(255,0,255,.22),transparent 60%),
+      linear-gradient(165deg,#f7f9ff,#eef2ff 48%,#fdf0fb);
+    --ink:#2b2350;--muted:rgba(43,35,80,.6);
+    --accent:#ff69b4;--accent2:#00ffff;
+    --card-bg:rgba(255,255,255,.42);
+    --font:"PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    --weight:500;--track:.01em;
+    --dur:340ms;--radius:30px;
+    --cols:minmax(0,1080px);--areas:"topbar" "stage" "panel";
+    --maxw:1140px;--gap:clamp(20px,3vw,34px);--page-pad:clamp(18px,4vw,48px);
+    --panel-pad:clamp(18px,2.6vw,28px);
+    --stage-border:2px solid #c0c0c0;
+    --stage-shadow:0 12px 34px rgba(255,105,180,.35),0 6px 24px rgba(0,255,255,.28);
+    --panel-border:2px solid rgba(192,192,192,.85);
+    --panel-shadow:0 8px 28px rgba(255,105,180,.3);
+    --preview-radius:22px;
+    --title-size:clamp(30px,5.2vw,56px);--title-weight:700;--title-track:.02em;
+    --btn-radius:999px;--btn-pad:.6em 1.3em;
+    --btn-ink:#3a2a55;
+    --btn-bg:linear-gradient(104deg,#ccd2dc,#ffffff 32%,#e2e7ef 54%,#ffffff 78%,#c6ccd6);
+    --btn-border:2px solid #c0c0c0;
+    --btn-shadow:0 6px 18px rgba(255,105,180,.3);
+    --btn-hover-tf:scale(1.05) translateY(-2px);
+    --btn-hover-shadow:0 10px 30px rgba(0,255,255,.45),0 8px 26px rgba(255,105,180,.45),inset 0 4px 8px rgba(255,255,255,1);
+    --btn-active-tf:scale(.9);
+    --track:linear-gradient(90deg,#ff69b4,#00ffff);--thumb-halo:rgba(255,105,180,.28);
+    --theme-gap:8px;--theme-radius:999px;--theme-border:2px solid rgba(192,192,192,.8);--theme-pad:4px 12px;
+    --drop-bg:radial-gradient(60% 60% at 50% 50%,rgba(255,105,180,.16),rgba(0,255,255,.1) 60%,transparent 80%);
+    --deco-opacity:1;
+  }
+  html[data-theme="y2k"] .app{padding-bottom:clamp(40px,8vw,90px)}
+  html[data-theme="y2k"] .title{
+    background-image:linear-gradient(96deg,#ff69b4,#00ffff 34%,#c0c0c0 58%,#ff00ff 82%,#ff69b4);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  html[data-theme="y2k"] .brand{text-shadow:0 0 18px rgba(255,105,180,.5)}
+  html[data-theme="y2k"] .stage{backdrop-filter:blur(6px)}
+  html[data-theme="y2k"] .panel{backdrop-filter:blur(8px);border-radius:34px}
+  html[data-theme="y2k"] .panel .chips{gap:10px}
+  html[data-theme="y2k"] .tbtn[aria-pressed="true"]{
+    background:linear-gradient(100deg,#ff69b4,#ffb3de);color:#fff;border-color:#fff;
+    box-shadow:0 0 20px rgba(255,105,180,.6);
+  }
+  html[data-theme="y2k"] .deco-a,
+  html[data-theme="y2k"] .deco-b,
+  html[data-theme="y2k"] .deco-c{
+    border-radius:50%;
+    background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.95),rgba(255,255,255,.15) 42%,rgba(255,105,180,.28) 70%,rgba(0,255,255,.2));
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 10px 40px rgba(0,255,255,.35);
+    animation:bubble 18s var(--ease) infinite alternate;
+  }
+  html[data-theme="y2k"] .deco-b{animation-duration:24s;border-radius:48% 52% 55% 45%}
+  html[data-theme="y2k"] .deco-c{animation-duration:30s}
+  @keyframes bubble{
+    0%{transform:translateY(0) scale(1)}
+    60%{transform:translateY(-6vh) scale(1.12)}
+    100%{transform:translateY(-2vh) scale(.96)}
+  }
+
+  /* ================================================================
+     4 · 少女漫画
+     ================================================================ */
+  html[data-theme="shoujo"]{
+    --bg:#fff5f7;--ink:#5b4a52;--muted:rgba(91,74,82,.58);
+    --accent:#ffb7c5;--accent2:#c4b5fd;
+    --card-bg:#fff5f7;
+    --font:"PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    --weight:400;--track:.02em;
+    --dur:320ms;--radius:26px;
+    --cols:7fr 5fr;--areas:"topbar topbar" "stage panel";
+    --maxw:1160px;--gap:clamp(20px,3vw,38px);--page-pad:clamp(18px,4vw,48px);
+    --panel-pad:clamp(20px,3vw,30px);
+    --stage-border:2px solid rgba(255,183,197,.55);
+    --stage-shadow:0 8px 30px rgba(255,183,197,.4);
+    --panel-border:2px solid rgba(255,183,197,.3);
+    --panel-shadow:0 8px 24px rgba(255,183,197,.28);
+    --btn-radius:999px;--btn-pad:.58em 1.2em;
+    --btn-bg:#fff;--btn-border:2px solid rgba(255,183,197,.7);
+    --btn-ink:#b5677a;
+    --btn-hover-tf:scale(1.05);
+    --btn-hover-shadow:0 8px 30px rgba(255,183,197,.6);
+    --btn-active-tf:scale(.95);
+    --track:rgba(255,183,197,.5);--thumb-halo:rgba(255,183,197,.3);
+    --title-size:clamp(24px,3.6vw,36px);--title-weight:600;
+    --theme-radius:999px;--theme-pad:4px 12px;--theme-gap:8px;
+    --drop-bg:radial-gradient(60% 60% at 50% 50%,rgba(255,183,197,.22),transparent 78%);
+    --deco-opacity:1;
+  }
+  html[data-theme="shoujo"] body::after{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:radial-gradient(circle,#ffb7c5 .6px,transparent .6px);
+    background-size:10px 10px;opacity:.5;
+  }
+  html[data-theme="shoujo"] .title{
+    display:inline-block;background:#ffb7c5;color:#fff;padding:.22em 1.5em;
+    clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%);
+    box-shadow:0 6px 18px rgba(255,183,197,.5);letter-spacing:.1em;
+  }
+  html[data-theme="shoujo"] .panel{transform:translateY(clamp(14px,3vw,40px))}
+  html[data-theme="shoujo"] .stagewrap::before{
+    content:"";position:absolute;width:26px;height:26px;border-radius:50%;
+    background:
+      radial-gradient(circle at 50% 12%,#ffb7c5 26%,transparent 27%),
+      radial-gradient(circle at 88% 50%,#ffb7c5 26%,transparent 27%),
+      radial-gradient(circle at 50% 88%,#ffb7c5 26%,transparent 27%),
+      radial-gradient(circle at 12% 50%,#ffb7c5 26%,transparent 27%),
+      radial-gradient(circle,#ffd9e0 34%,transparent 35%);
+    margin-bottom:10px;
+  }
+  html[data-theme="shoujo"] .stagewrap{position:relative;padding-top:34px}
+  html[data-theme="shoujo"] .stagewrap::before{position:absolute;left:0;top:0}
+  html[data-theme="shoujo"] .tbtn[aria-pressed="true"]{
+    background:#ffb7c5;color:#fff;border-color:#fff;box-shadow:0 6px 20px rgba(255,183,197,.6);
+  }
+  html[data-theme="shoujo"] .deco-a,
+  html[data-theme="shoujo"] .deco-b,
+  html[data-theme="shoujo"] .deco-c{
+    border-radius:50% 0 50% 50%;
+    background:linear-gradient(140deg,rgba(255,183,197,.75),rgba(254,205,211,.55));
+    animation:petal 16s var(--ease) infinite alternate;
+  }
+  html[data-theme="shoujo"] .deco-b{animation-duration:22s;border-radius:50% 50% 0 50%;background:linear-gradient(140deg,rgba(196,181,253,.6),rgba(254,205,211,.5))}
+  html[data-theme="shoujo"] .deco-c{animation-duration:28s}
+  @keyframes petal{
+    0%{transform:translate(0,0) rotate(0deg) scale(1)}
+    100%{transform:translate(4vw,6vh) rotate(42deg) scale(1.1)}
+  }
+
+  /* ================================================================
+     5 · 奢品零售暗金
+     ================================================================ */
+  html[data-theme="luxury"]{
+    --bg:#faf9f6;--ink:#1a1a1a;--muted:rgba(26,26,26,.48);
+    --accent:#c9a96e;--accent2:#1a1a1a;
+    --card-bg:transparent;
+    --font:"Songti SC","Noto Serif SC",Georgia,serif;
+    --weight:400;--track:.1em;
+    --dur:400ms;--radius:2px;
+    --cols:2.3fr .85fr;--areas:"topbar topbar" "stage panel";
+    --maxw:1220px;--gap:clamp(26px,4vw,58px);--page-pad:clamp(22px,5vw,64px);
+    --panel-pad:clamp(20px,2.6vw,30px);--panel-gap:26px;
+    --stage-border:1px solid #e8e0d4;
+    --stage-shadow:none;
+    --panel-border:0;--panel-shadow:none;
+    --preview-radius:0;
+    --title-size:clamp(28px,4.4vw,48px);--title-weight:400;--title-track:.26em;
+    --btn-radius:0;--btn-pad:.7em 1.4em;--btn-track:.14em;
+    --btn-border:1px solid #1a1a1a;--btn-bg:transparent;
+    --btn-hover-shadow:none;
+    --btn-bg-hover:#1a1a1a;
+    --track:rgba(26,26,26,.16);--thumb-halo:rgba(201,169,110,.25);
+    --theme-gap:14px;--theme-radius:0;--theme-pad:3px 0;
+    --drop-bg:radial-gradient(60% 60% at 50% 50%,rgba(201,169,110,.08),transparent 78%);
+  }
+  html[data-theme="luxury"] .panel{
+    border-left:1px solid #e8e0d4;padding-left:clamp(18px,2.4vw,30px);
+  }
+  html[data-theme="luxury"] .panel .field + .field,
+  html[data-theme="luxury"] .panel .transport,
+  html[data-theme="luxury"] .panel .status{padding-top:18px;border-top:1px solid #e8e0d4}
+  html[data-theme="luxury"] .btn:hover{color:#fff}
+  html[data-theme="luxury"] .btn.main{border-color:#c9a96e;letter-spacing:.18em}
+  html[data-theme="luxury"] .btn.main:hover{background:#c9a96e;border-color:#c9a96e;color:#fff}
+  html[data-theme="luxury"] .lab{letter-spacing:.3em}
+  html[data-theme="luxury"] .tbtn{border-bottom:1px solid transparent}
+  html[data-theme="luxury"] .tbtn[aria-pressed="true"]{border-bottom-color:#c9a96e;color:#1a1a1a}
+  html[data-theme="luxury"] .stagetop{border-bottom:1px solid #e8e0d4;padding-bottom:22px}
+
+  /* ================================================================
+     6 · 田园核
+     ================================================================ */
+  html[data-theme="cottage"]{
+    --bg:#faf6f0;--ink:#4a3b2e;--muted:rgba(74,59,46,.55);
+    --accent:#5a8f5a;--accent2:#d4a0a0;
+    --card-bg:#fffdf8;
+    --font:Georgia,"Songti SC","Noto Serif SC",serif;
+    --weight:400;--track:.02em;
+    --dur:600ms;--radius:22px;
+    --cols:1fr 1.6fr;--areas:"topbar topbar" "panel stage";
+    --maxw:1180px;--gap:clamp(22px,3.4vw,44px);--page-pad:clamp(20px,4vw,52px);
+    --panel-pad:clamp(20px,3vw,30px);
+    --stage-border:1px solid rgba(212,160,160,.4);
+    --stage-shadow:0 6px 20px rgba(139,115,85,.16);
+    --panel-border:1px solid rgba(212,160,160,.35);
+    --panel-shadow:0 6px 18px rgba(139,115,85,.14);
+    --btn-radius:18px;--btn-pad:.6em 1.2em;
+    --btn-bg:#fffdf8;--btn-border:1px solid rgba(139,115,85,.32);
+    --btn-ink:#4a3b2e;
+    --btn-hover-tf:rotate(-.8deg);--btn-hover-shadow:0 6px 18px rgba(139,115,85,.2);
+    --btn-active-tf:scale(.97);
+    --track:rgba(139,115,85,.24);--thumb-halo:rgba(90,143,90,.18);
+    --theme-gap:12px;--theme-radius:14px;--theme-border:1px solid rgba(139,115,85,.22);--theme-pad:3px 10px;
+    --drop-bg:radial-gradient(60% 60% at 50% 50%,rgba(140,197,168,.18),transparent 78%);
+    --deco-opacity:1;
+  }
+  html[data-theme="cottage"] body::after{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background-image:
+      repeating-linear-gradient(45deg,rgba(139,115,85,.05) 0 1px,transparent 1px 4px),
+      repeating-linear-gradient(-45deg,rgba(139,115,85,.04) 0 1px,transparent 1px 5px);
+  }
+  html[data-theme="cottage"] .title{font-weight:400;letter-spacing:.06em}
+  html[data-theme="cottage"] .panel{transform:rotate(-.5deg)}
+  html[data-theme="cottage"] .tbtn[aria-pressed="true"]{background:rgba(90,143,90,.12);border-color:rgba(90,143,90,.4);color:#5a8f5a}
+  html[data-theme="cottage"] .deco-a,
+  html[data-theme="cottage"] .deco-b,
+  html[data-theme="cottage"] .deco-c{
+    background:
+      radial-gradient(50% 70% at 50% 100%,rgba(90,143,90,.4),transparent 70%),
+      radial-gradient(38% 52% at 50% 62%,rgba(140,197,168,.5),transparent 72%);
+    border-radius:50% 50% 0 0;
+    animation:sway 18s var(--ease) infinite alternate;
+    transform-origin:50% 100%;
+  }
+  html[data-theme="cottage"] .deco-b{animation-duration:24s;background:radial-gradient(50% 70% at 50% 100%,rgba(212,160,160,.42),transparent 70%),radial-gradient(38% 52% at 50% 62%,rgba(245,215,95,.45),transparent 72%)}
+  @keyframes sway{
+    0%{transform:rotate(-1.2deg)}
+    100%{transform:rotate(1.4deg)}
+  }
+
+  /* ================================================================
+     7 · 新艺术运动
+     ================================================================ */
+  html[data-theme="nouveau"]{
+    --bg:#f5f0e1;--ink:#2d5016;--muted:rgba(45,80,22,.58);
+    --accent:#c9a227;--accent2:#8b6db5;
+    --card-bg:#fbf7ea;
+    --font:"Georgia","Songti SC","Noto Serif SC",serif;
+    --weight:400;--track:.02em;
+    --dur:700ms;--radius:30px;
+    --cols:minmax(0,880px);--areas:"topbar" "stage" "panel";
+    --maxw:1020px;--gap:clamp(24px,4vw,52px);--page-pad:clamp(22px,5vw,60px);
+    --panel-pad:clamp(20px,3vw,32px);
+    --stage-border:2px solid rgba(201,162,39,.6);
+    --stage-shadow:0 10px 32px rgba(45,80,22,.14);
+    --panel-border:2px solid rgba(201,162,39,.4);
+    --panel-shadow:0 8px 26px rgba(45,80,22,.12);
+    --btn-radius:18px 18px 24px 24px;--btn-pad:.62em 1.3em;
+    --btn-bg:#fbf7ea;--btn-border:1px solid rgba(201,162,39,.6);
+    --btn-hover-tf:translateY(-2px);--btn-hover-shadow:0 12px 34px rgba(201,162,39,.35);
+    --btn-active-tf:translateY(0);
+    --track:rgba(45,80,22,.2);--thumb-halo:rgba(201,162,39,.25);
+    --title-size:clamp(28px,4.6vw,50px);--title-track:.06em;
+    --theme-gap:12px;--theme-radius:999px;--theme-border:1px solid rgba(201,162,39,.5);--theme-pad:3px 12px;
+    --drop-bg:radial-gradient(60% 60% at 50% 50%,rgba(201,162,39,.14),transparent 76%);
+    --deco-opacity:1;
+  }
+  html[data-theme="nouveau"] .stage{border-radius:50% 50% 10px 10px / 20% 20% 3px 3px}
+  html[data-theme="nouveau"] .stagetop{text-align:center}
+  html[data-theme="nouveau"] .subtitle{margin-inline:auto}
+  html[data-theme="nouveau"] .panel{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;align-items:start;
+  }
+  html[data-theme="nouveau"] .panel .transport,
+  html[data-theme="nouveau"] .panel > input[type=range],
+  html[data-theme="nouveau"] .panel .status{grid-column:1 / -1}
+  html[data-theme="nouveau"] .btn:hover{transform:var(--btn-hover-tf) rotate(2deg)}
+  html[data-theme="nouveau"] .tbtn[aria-pressed="true"]{background:rgba(201,162,39,.18);border-color:rgba(201,162,39,.8)}
+  html[data-theme="nouveau"] .deco-a,
+  html[data-theme="nouveau"] .deco-b,
+  html[data-theme="nouveau"] .deco-c{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%232d5016' stroke-width='1.6' opacity='.55'%3E%3Cpath d='M20 190C20 120 60 90 60 40c0-14 12-24 26-24s26 10 26 24c0 50 40 80 40 150'/%3E%3Cpath d='M86 16c-18 14-30 34-30 56s14 34 30 40'/%3E%3Cpath d='M96 120c-22 8-34 26-34 46'/%3E%3Cpath d='M112 70c18-12 30-30 30-50'/%3E%3C/g%3E%3C/svg%3E");
+    background-size:contain;background-repeat:no-repeat;opacity:.5;
+    animation:grow 22s var(--ease) infinite alternate;
+  }
+  html[data-theme="nouveau"] .deco-b{opacity:.34;animation-duration:30s}
+  html[data-theme="nouveau"] .deco-c{opacity:.26;animation-duration:38s}
+  @keyframes grow{
+    0%{transform:scale(.96) rotate(-2deg)}
+    100%{transform:scale(1.04) rotate(2deg)}
+  }
+
+  /* ================================================================
+     8 · 纸艺手作
+     ================================================================ */
+  html[data-theme="papercraft"]{
+    --bg:#fdf6ee;--ink:#2d2d2d;--muted:rgba(45,45,45,.55);
+    --accent:#e85d75;--accent2:#5cb8a5;
+    --card-bg:#fffdf8;
+    --font:"PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    --weight:500;--track:.01em;
+    --dur:240ms;--ease:ease-out;
+    --radius:14px;
+    --cols:1.5fr 1fr;--areas:"topbar topbar" "stage panel";
+    --maxw:1160px;--gap:clamp(24px,3.6vw,46px);--page-pad:clamp(20px,4vw,50px);
+    --panel-pad:clamp(20px,3vw,30px);
+    --stage-border:2px solid #e0d8cc;
+    --stage-shadow:6px 6px 0 rgba(0,0,0,.1);
+    --panel-border:2px solid #e0d8cc;
+    --panel-shadow:5px 5px 0 rgba(0,0,0,.09);
+    --btn-radius:14px;--btn-pad:.6em 1.15em;
+    --btn-bg:#fffdf8;--btn-border:2px solid #e0d8cc;
+    --btn-ink:#2d2d2d;
+    --btn-shadow:3px 3px 0 rgba(0,0,0,.1);
+    --btn-hover-tf:translateY(-3px) rotate(-1deg);
+    --btn-hover-shadow:6px 6px 0 rgba(0,0,0,.14);
+    --btn-active-tf:translateY(2px);
+    --btn-active-shadow:1px 1px 0 rgba(0,0,0,.08);
+    --track:rgba(45,45,45,.18);--thumb-halo:rgba(232,93,117,.16);
+    --title-size:clamp(28px,4.4vw,46px);--title-weight:700;
+    --theme-gap:9px;--theme-radius:12px;--theme-border:2px solid #e0d8cc;--theme-pad:3px 11px;
+    --drop-bg:radial-gradient(60% 60% at 50% 50%,rgba(245,192,64,.2),transparent 78%);
+    --deco-opacity:1;
+  }
+  html[data-theme="papercraft"] .stage{transform:rotate(.5deg)}
+  html[data-theme="papercraft"] .panel{transform:rotate(-.8deg)}
+  html[data-theme="papercraft"] .btn{transform:rotate(-.6deg)}
+  html[data-theme="papercraft"] .btn.main{background:#e85d75;color:#fff;border-color:#c94c62}
+  html[data-theme="papercraft"] .tbtn{box-shadow:2px 2px 0 rgba(0,0,0,.08)}
+  html[data-theme="papercraft"] .tbtn[aria-pressed="true"]{background:#f5c040;border-color:#d9a520;color:#3d3220}
+  html[data-theme="papercraft"] .title{color:#2d2d2d}
+  html[data-theme="papercraft"] .deco-a,
+  html[data-theme="papercraft"] .deco-b,
+  html[data-theme="papercraft"] .deco-c{
+    background:#5cb8a5;box-shadow:5px 5px 0 rgba(0,0,0,.1);border-radius:16px;
+    clip-path:polygon(2% 6%,98% 0,100% 94%,4% 100%);
+    opacity:.4;animation:drift 26s var(--ease) infinite alternate;
+  }
+  html[data-theme="papercraft"] .deco-b{background:#6b7fb5;animation-duration:32s}
+  html[data-theme="papercraft"] .deco-c{background:#f5c040;animation-duration:40s}
+  @keyframes drift{
+    0%{transform:translate(0,0) rotate(0deg)}
+    100%{transform:translate(2vw,-3vh) rotate(6deg)}
+  }
+
+  /* ============ 响应式：窄屏统一收成一列 ============ */
+  @media (max-width:860px){
+    .app{
+      grid-template-columns:minmax(0,1fr) !important;
+      grid-template-areas:"topbar" "stage" "panel" !important;
+    }
+    .panel{transform:none !important;margin-top:0 !important;border-left:0 !important;padding-left:var(--panel-pad) !important}
+    .panel .field + .field,
+    .panel .transport,
+    .panel .status{border-top:0 !important;padding-top:0 !important}
+    html[data-theme="nouveau"] .panel{grid-template-columns:minmax(0,1fr)}
+    html[data-theme="nouveau"] .title{text-align:left}
+    html[data-theme="shoujo"] .panel{transform:none !important}
+    html[data-theme="luxury"] .panel{border-left:0}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition-duration:1ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="deco deco-a" aria-hidden="true"></div>
+<div class="deco deco-b" aria-hidden="true"></div>
+<div class="deco deco-c" aria-hidden="true"></div>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">Aquarelle<span>Protean</span></div>
+    <nav class="themebar" id="themeBar" aria-label="主题切换"></nav>
+  </header>
+
+  <section class="stagewrap">
+    <div class="stagetop">
+      <h1 class="title" id="titleEl">八面音画</h1>
+      <p class="subtitle" id="subEl">同一段声音，八种面孔。换主题，连排版一起换。</p>
+    </div>
+    <div class="stage" id="stageBox">
+      <canvas id="stage" width="960" height="540"></canvas>
+      <div class="recdot" id="recBadge"><i></i>正在录制</div>
+      <div class="drop" id="dropTip">拖入音频，或点面板里的「选择音频」</div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="field">
+      <span class="lab">音频</span>
+      <span class="val" id="fileName">尚未选择</span>
+    </div>
+
+    <div class="transport">
+      <button class="btn main" id="playBtn" disabled>播放</button>
+      <span class="time" id="timeLabel">0:00 / 0:00</span>
+    </div>
+    <input type="range" id="seek" min="0" max="1000" value="0" aria-label="播放进度">
+
+    <div class="field">
+      <span class="lab">效果</span>
+      <div class="chips" id="fxChips"></div>
+    </div>
+
+    <div class="field">
+      <span class="lab">画质</span>
+      <div class="chips" id="resChips"></div>
+    </div>
+
+    <div class="field">
+      <span class="lab">操作</span>
+      <div class="chips">
+        <button class="btn" id="pickBtn">选择音频</button>
+        <button class="btn" id="recBtn">开始录制</button>
+        <span class="time" id="recState">未开始</span>
+      </div>
+    </div>
+
+    <div class="field hidden" id="outField">
+      <span class="lab">导出</span>
+      <video class="preview" id="preview" controls playsinline></video>
+      <div class="chips">
+        <button class="btn" id="shareBtn">保存到设备</button>
+        <a class="btn" id="dlLink" download>直接下载</a>
+        <button class="btn" id="openBtn">新标签打开</button>
+      </div>
+    </div>
+
+    <p class="status" id="status">选一个音频，开始。</p>
+    <input type="file" id="fileInput" accept="audio/*" hidden>
+  </aside>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= 画布与资源 ================= */
+  var canvas = document.getElementById('stage');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  var RES = [
+    {w:1280, h:720, name:'720p'},
+    {w:960,  h:540, name:'540p'},
+    {w:640,  h:360, name:'360p'}
+  ];
+  var resIndex = 1;
+  var PAD = 80;
+  var bgCanvas = document.createElement('canvas');
+  var bgCtx = bgCanvas.getContext('2d');
+  var sprites = {};
+
+  var THEMES = [
+    {id:'korean',     name:'韩式极简'},
+    {id:'surreal',    name:'超现实'},
+    {id:'y2k',        name:'千禧'},
+    {id:'shoujo',     name:'少女漫画'},
+    {id:'luxury',     name:'暗金奢品'},
+    {id:'cottage',    name:'田园核'},
+    {id:'nouveau',    name:'新艺术'},
+    {id:'papercraft', name:'纸艺手作'}
+  ];
+
+  var COPY = {
+    korean:     {title:'留白与呼吸',   sub:'声音只留下一根线，其余都交给空白。'},
+    surreal:    {title:'梦里的钟表在融化', sub:'理性在这里失效，时间是弹性的。'},
+    y2k:        {title:'银色未来',     sub:'金属、气泡、镭射光，2000 年的乐观。'},
+    shoujo:     {title:'心跳的分贝',   sub:'每一拍都开出一朵花。'},
+    luxury:     {title:'以声为奢',     sub:'克制是唯一昂贵的语言。'},
+    cottage:    {title:'午后小院',     sub:'风穿过草地的时候，声音也长了出来。'},
+    nouveau:    {title:'藤蔓与金',     sub:'让声音像植物一样生长。'},
+    papercraft: {title:'剪出来的声音', sub:'一张张纸叠成节拍。'}
+  };
+
+  /* 每个主题在画布上的纸面与颜料 */
+  var SKIN = {
+    korean:     {paper:'#faf9f7', wash:['168,197,184','212,165,165'], dots:'', colors:['#3d4a5c','#d4a5a5','#a8c5b8','#e8d4b8']},
+    surreal:    {paper:'#1a1a3e', wash:['195,141,148','212,165,116','139,109,181'], dots:'', dark:true, colors:['#d4a574','#c38d94','#8b6db5','#f0ece4']},
+    y2k:        {paper:'#f4f7ff', wash:['255,105,180','0,255,255','192,192,192'], dots:'', colors:['#ff69b4','#00ffff','#c0c0c0','#ff00ff']},
+    shoujo:     {paper:'#fff5f7', wash:['255,183,197','196,181,253'], dots:'#ffb7c5', colors:['#ffb7c5','#c4b5fd','#fde68a','#fecdd3']},
+    luxury:     {paper:'#faf9f6', wash:['201,169,110'], dots:'', faint:true, colors:['#c9a96e','#1a1a1a','#b9a98a','#8a7f6a']},
+    cottage:    {paper:'#faf6f0', wash:['90,143,90','212,160,160','245,215,95'], dots:'', colors:['#5a8f5a','#f5d75f','#d4a0a0','#8b7355']},
+    nouveau:    {paper:'#f5f0e1', wash:['45,80,22','201,162,39'], dots:'', colors:['#2d5016','#c9a227','#8b6db5','#4a7a2a']},
+    papercraft: {paper:'#fdf6ee', wash:['232,93,117','92,184,165','245,192,64'], dots:'', colors:['#e85d75','#5cb8a5','#f5c040','#6b7fb5']}
+  };
+
+  /* ================= 音频状态 ================= */
+  var audioCtx = null, analyser = null, gainNode = null, recDest = null;
+  var audioBuffer = null, srcNode = null;
+  var isPlaying = false, offset = 0, startedAt = 0, seeking = false;
+  var freq = null, wave = null, SB = null, energy = 0;
+  var NB = 96;
+
+  /* ================= 录制状态 ================= */
+  var mediaRecorder = null, chunks = [], recording = false;
+  var lastBlob = null, lastUrl = null, lastName = 'protean.webm';
+
+  var themeId = 'korean';
+
+  var el = {
+    fileInput: document.getElementById('fileInput'),
+    fileName: document.getElementById('fileName'),
+    playBtn: document.getElementById('playBtn'),
+    timeLabel: document.getElementById('timeLabel'),
+    seek: document.getElementById('seek'),
+    resChips: document.getElementById('resChips'),
+    fxChips: document.getElementById('fxChips'),
+    themeBar: document.getElementById('themeBar'),
+    titleEl: document.getElementById('titleEl'),
+    subEl: document.getElementById('subEl'),
+    recBtn: document.getElementById('recBtn'),
+    recState: document.getElementById('recState'),
+    recBadge: document.getElementById('recBadge'),
+    dropTip: document.getElementById('dropTip'),
+    outField: document.getElementById('outField'),
+    preview: document.getElementById('preview'),
+    shareBtn: document.getElementById('shareBtn'),
+    dlLink: document.getElementById('dlLink'),
+    openBtn: document.getElementById('openBtn'),
+    status: document.getElementById('status')
+  };
+
+  function setStatus(t){ el.status.textContent = t; }
+
+  function fmt(s){
+    s = Math.max(0, s|0);
+    var m = (s/60)|0, r = s%60;
+    return m + ':' + (r<10?'0':'') + r;
+  }
+
+  function ensureCtx(){
+    if (!audioCtx){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.78;
+      gainNode = audioCtx.createGain();
+      recDest = audioCtx.createMediaStreamDestination();
+      analyser.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      gainNode.connect(recDest);
+      freq = new Uint8Array(analyser.frequencyBinCount);
+      wave = new Uint8Array(analyser.fftSize);
+      SB = new Float32Array(NB);
+      wave.fill(128);
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function pickMime(){
+    var list = ['video/webm;codecs=vp8,opus','video/webm;codecs=h264,opus','video/webm;codecs=vp8','video/webm','video/mp4'];
+    if (!window.MediaRecorder) return '';
+    for (var i=0;i<list.length;i++){
+      if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(list[i])) return list[i];
+    }
+    return '';
+  }
+
+  function loadFile(file){
+    if (!file) return;
+    if (!/^audio\//.test(file.type) && !/\.(mp3|wav|m4a|ogg|flac|aac|opus|webm)$/i.test(file.name)){
+      setStatus('这不是音频文件。');
+      return;
+    }
+    ensureCtx();
+    setStatus('正在解码…');
+    el.fileName.textContent = file.name;
+    var fr = new FileReader();
+    fr.onload = function(){
+      audioCtx.decodeAudioData(fr.result.slice(0), function(decoded){
+        audioBuffer = decoded;
+        offset = 0;
+        stopSource();
+        el.playBtn.disabled = false;
+        el.playBtn.textContent = '播放';
+        el.seek.value = 0;
+        el.timeLabel.textContent = '0:00 / ' + fmt(decoded.duration);
+        el.dropTip.classList.add('hide');
+        setStatus('已载入 ' + fmt(decoded.duration) + '。');
+      }, function(){
+        setStatus('解码失败，换个格式试试。');
+      });
+    };
+    fr.onerror = function(){ setStatus('读文件出错。'); };
+    fr.readAsArrayBuffer(file);
+  }
+
+  function stopSource(){
+    if (srcNode){
+      try { srcNode.onended = null; srcNode.stop(); } catch(e){}
+      try { srcNode.disconnect(); } catch(e){}
+      srcNode = null;
+    }
+  }
+
+  function play(at){
+    if (!audioBuffer) return;
+    ensureCtx();
+    stopSource();
+    at = Math.max(0, Math.min(at, audioBuffer.duration - 0.02));
+    srcNode = audioCtx.createBufferSource();
+    srcNode.buffer = audioBuffer;
+    srcNode.connect(analyser);
+    srcNode.start(0, at);
+    startedAt = audioCtx.currentTime;
+    offset = at;
+    isPlaying = true;
+    el.playBtn.textContent = '暂停';
+  }
+
+  function pause(){
+    if (!isPlaying) return;
+    offset = Math.min(audioBuffer.duration, offset + (audioCtx.currentTime - startedAt));
+    stopSource();
+    isPlaying = false;
+    el.playBtn.textContent = '播放';
+  }
+
+  function togglePlay(){
+    if (!audioBuffer) return;
+    if (isPlaying) pause(); else play(offset >= audioBuffer.duration - 0.05 ? 0 : offset);
+  }
+
+  function currentTime(){
+    if (!audioBuffer) return 0;
+    return isPlaying ? Math.min(audioBuffer.duration, offset + (audioCtx.currentTime - startedAt)) : offset;
+  }
+
+  /* ================= 录制 ================= */
+  function startRecording(){
+    if (!audioBuffer){ setStatus('先选一个音频。'); return; }
+    if (!window.MediaRecorder){ setStatus('这个浏览器不支持录制，换 Chrome 内核的试试。'); return; }
+    ensureCtx();
+    var stream = canvas.captureStream(30);
+    var mixed = new MediaStream();
+    stream.getVideoTracks().forEach(function(t){ mixed.addTrack(t); });
+    recDest.stream.getAudioTracks().forEach(function(t){ mixed.addTrack(t); });
+
+    var opts = { videoBitsPerSecond: 3500000, audioBitsPerSecond: 128000 };
+    var mime = pickMime();
+    if (mime) opts.mimeType = mime;
+
+    try { mediaRecorder = new MediaRecorder(mixed, opts); }
+    catch(e){ mediaRecorder = new MediaRecorder(mixed); }
+
+    chunks = [];
+    mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size) chunks.push(e.data); };
+    mediaRecorder.onstop = function(){
+      recording = false;
+      el.recBadge.classList.remove('on');
+      el.recBtn.textContent = '开始录制';
+      el.recState.textContent = '已完成';
+      var type = (chunks[0] && chunks[0].type) || 'video/webm';
+      lastBlob = new Blob(chunks, {type: type});
+      lastName = 'protean-' + themeId + '-' + Date.now() + (type.indexOf('mp4') >= 0 ? '.mp4' : '.webm');
+      if (lastUrl) URL.revokeObjectURL(lastUrl);
+      lastUrl = URL.createObjectURL(lastBlob);
+      el.dlLink.href = lastUrl;
+      el.dlLink.download = lastName;
+      el.dlLink.textContent = '直接下载 (' + (lastBlob.size/1048576).toFixed(1) + 'MB)';
+      el.preview.src = lastUrl;
+      el.outField.classList.remove('hidden');
+      setStatus('录制完成，' + (lastBlob.size/1048576).toFixed(1) + 'MB。先看预览，再点「保存到设备」。');
+    };
+
+    el.preview.pause();
+    el.outField.classList.add('hidden');
+    mediaRecorder.start(250);
+    recording = true;
+    el.recBadge.classList.add('on');
+    el.recBtn.textContent = '停止录制';
+    el.recState.textContent = '录制中';
+    setStatus('正在录制，页面保持可见。');
+    pause();
+    offset = 0;
+    play(0);
+  }
+
+  function stopRecording(){
+    if (mediaRecorder && mediaRecorder.state !== 'inactive'){
+      try { mediaRecorder.stop(); } catch(e){}
+    }
+  }
+
+  function doDownload(){
+    if (!lastUrl){ setStatus('还没有录好的视频。'); return; }
+    var a = document.createElement('a');
+    a.href = lastUrl;
+    a.download = lastName;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ if (a.parentNode) a.parentNode.removeChild(a); }, 800);
+    setStatus('已触发下载。进度不动就是浏览器不支持直下 blob，改用「保存到设备」。');
+  }
+
+  function saveVideo(){
+    if (!lastBlob){ setStatus('还没有录好的视频。'); return; }
+    var f = new File([lastBlob], lastName, {type: lastBlob.type || 'video/webm'});
+    if (navigator.canShare && navigator.share && navigator.canShare({files:[f]})){
+      navigator.share({files:[f], title: lastName})
+        .then(function(){ setStatus('已交给系统保存，去相册或「下载」里看看。'); })
+        .catch(function(){ setStatus('分享被取消，也可以试「直接下载」。'); });
+      return;
+    }
+    if (window.showSaveFilePicker){
+      showSaveFilePicker({suggestedName: lastName})
+        .then(function(h){ return h.createWritable(); })
+        .then(function(w){ return w.write(lastBlob).then(function(){ return w.close(); }); })
+        .then(function(){ setStatus('已保存到你选的位置。'); })
+        .catch(function(){ setStatus('保存取消或失败。'); });
+      return;
+    }
+    doDownload();
+  }
+
+  function openBlob(){
+    if (!lastUrl){ setStatus('还没有录好的视频。'); return; }
+    window.open(lastUrl, '_blank');
+    setStatus('已在新标签打开，长按画面即可保存。');
+  }
+
+  /* ================= 画布：底色与纸面 ================= */
+  function buildBg(){
+    var S = SKIN[themeId];
+    bgCanvas.width = W + PAD*2;
+    bgCanvas.height = H + PAD*2;
+    bgCtx.setTransform(1,0,0,1,0,0);
+    bgCtx.globalCompositeOperation = 'source-over';
+    bgCtx.globalAlpha = 1;
+    bgCtx.fillStyle = S.paper;
+    bgCtx.fillRect(0,0,bgCanvas.width,bgCanvas.height);
+
+    if (S.dots){
+      bgCtx.fillStyle = S.dots;
+      for (var y=0;y<bgCanvas.height;y+=10){
+        for (var x=0;x<bgCanvas.width;x+=10){
+          bgCtx.beginPath();
+          bgCtx.arc(x,y,0.7,0,6.283);
+          bgCtx.fill();
+        }
+      }
+    }
+
+    bgCtx.translate(PAD,PAD);
+    bgCtx.globalCompositeOperation = S.dark ? 'lighter' : 'multiply';
+    var spots = [[0.2,0.24],[0.8,0.2],[0.72,0.82],[0.22,0.8],[0.5,0.5]];
+    var base = S.faint ? 0.07 : 0.16;
+    for (var i=0;i<spots.length;i++){
+      var c = S.wash[i % S.wash.length];
+      var g = bgCtx.createRadialGradient(spots[i][0]*W, spots[i][1]*H, 0, spots[i][0]*W, spots[i][1]*H, W*0.46);
+      g.addColorStop(0, 'rgba(' + c + ',' + base + ')');
+      g.addColorStop(0.55, 'rgba(' + c + ',' + (base*0.4) + ')');
+      g.addColorStop(1, 'rgba(' + c + ',0)');
+      bgCtx.fillStyle = g;
+      bgCtx.fillRect(-PAD,-PAD, W+PAD*2, H+PAD*2);
+    }
+    bgCtx.globalCompositeOperation = 'source-over';
+    bgCtx.setTransform(1,0,0,1,0,0);
+  }
+
+  function drawBackground(t){
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    var dx = Math.sin(t*0.00012)*30;
+    var dy = Math.cos(t*0.00016)*22;
+    ctx.drawImage(bgCanvas, PAD-dx, PAD-dy, W, H, 0, 0, W, H);
+  }
+
+  function rr(x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function star(x,y,r){
+    ctx.beginPath();
+    ctx.moveTo(x, y-r);
+    ctx.quadraticCurveTo(x, y, x+r, y);
+    ctx.quadraticCurveTo(x, y, x, y+r);
+    ctx.quadraticCurveTo(x, y, x-r, y);
+    ctx.quadraticCurveTo(x, y, x, y-r);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function heart(x,y,s){
+    ctx.beginPath();
+    ctx.moveTo(x, y+s*0.75);
+    ctx.bezierCurveTo(x-s*1.3, y-s*0.35, x-s*0.5, y-s*1.25, x, y-s*0.35);
+    ctx.bezierCurveTo(x+s*0.5, y-s*1.25, x+s*1.3, y-s*0.35, x, y+s*0.75);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function spriteFor(col){
+    if (sprites[col]) return sprites[col];
+    var s = document.createElement('canvas');
+    s.width = s.height = 128;
+    var c = s.getContext('2d');
+    var g = c.createRadialGradient(64,64,0,64,64,64);
+    g.addColorStop(0, col);
+    g.addColorStop(0.45, col + '88');
+    g.addColorStop(1, col + '00');
+    c.fillStyle = g;
+    c.fillRect(0,0,128,128);
+    sprites[col] = s;
+    return s;
+  }
+
+  function bandAt(p){
+    p = Math.max(0, Math.min(1, p));
+    var idx = p * (NB-1);
+    var i0 = Math.floor(idx), i1 = Math.min(NB-1, i0+1), f = idx - i0;
+    return SB[i0]*(1-f) + SB[i1]*f;
+  }
+
+  function updateSpectrum(){
+    if (!analyser) return;
+    if (isPlaying){
+      analyser.getByteFrequencyData(freq);
+      analyser.getByteTimeDomainData(wave);
+    } else {
+      for (var i=0;i<freq.length;i++) freq[i] *= 0.93;
+      for (var j=0;j<wave.length;j++) wave[j] = 128 + (wave[j]-128)*0.9;
+    }
+    var maxBin = Math.floor(freq.length*0.72);
+    var k = isPlaying ? 0.34 : 0.12;
+    for (var b=0;b<NB;b++){
+      var lo = Math.floor(Math.pow(b/NB, 1.7)*maxBin);
+      var hi = Math.max(lo+1, Math.floor(Math.pow((b+1)/NB, 1.7)*maxBin));
+      var s = 0;
+      for (var m=lo;m<hi;m++) s += freq[m];
+      var v = s/(hi-lo)/255;
+      SB[b] += (v - SB[b]) * k;
+    }
+    var e = 0;
+    for (var q=0;q<10;q++) e += SB[q];
+    e = Math.min(1, (e/10)*1.5);
+    energy += (e - energy) * 0.22;
+  }
+
+  /* ================= 八种可视化 ================= */
+
+  /* 韩式极简：一根细线 + 稀疏刻度 */
+  function pKorean(t, c){
+    var n = wave.length;
+    ctx.strokeStyle = c[0];
+    ctx.lineWidth = 1.4;
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    for (var i=0;i<n;i+=3){
+      var x = i/(n-1)*W;
+      var v = (wave[i]-128)/128;
+      var y = H*0.5 + v*H*0.15;
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.16;
+    ctx.lineWidth = 1;
+    for (var k=0;k<12;k++){
+      var p = (k+0.5)/12;
+      var x2 = W*p;
+      var hh = bandAt(p)*H*0.2;
+      ctx.beginPath();
+      ctx.moveTo(x2, H*0.76);
+      ctx.lineTo(x2, H*0.76-hh);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 超现实：融化的波形 + 漂浮体 */
+  function pSurreal(t, c){
+    var n = wave.length;
+    ctx.lineCap = 'round';
+    for (var L=0;L<3;L++){
+      ctx.beginPath();
+      for (var i=0;i<n;i+=2){
+        var x = i/(n-1)*W;
+        var v = (wave[i]-128)/128;
+        var melt = Math.sin(x*0.006 + t*0.0009 + L*2)*H*0.07;
+        var y = H*(0.42 + L*0.1) + v*H*0.15 + melt;
+        if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = c[L];
+      ctx.globalAlpha = 0.1;
+      ctx.lineWidth = 34 - L*8;
+      ctx.stroke();
+      ctx.globalAlpha = 0.42;
+      ctx.lineWidth = 12 - L*3;
+      ctx.stroke();
+    }
+    for (var k=0;k<5;k++){
+      var a = (k/5)*6.283 + t*0.0002;
+      var r = H*(0.09 + 0.05*Math.sin(t*0.001 + k));
+      var x = W*0.5 + Math.cos(a)*W*0.26;
+      var y = H*0.5 + Math.sin(a*1.3)*H*0.2;
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = c[k % c.length];
+      ctx.beginPath();
+      ctx.ellipse(x, y, r, r*1.5, a*0.2, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 千禧：金属环 + 彩虹柱 + 星星 */
+  function pY2k(t, c){
+    var bars = 48, bw = W/bars, base = H*0.9;
+    for (var b=0;b<bars;b++){
+      var v = Math.pow(bandAt(b/bars), 0.9);
+      var hgt = Math.max(6, v*H*0.58);
+      var x = b*bw + bw*0.16, w = bw*0.68;
+      var g = ctx.createLinearGradient(0, base-hgt, 0, base);
+      g.addColorStop(0, c[1]);
+      g.addColorStop(0.45, c[0]);
+      g.addColorStop(1, 'rgba(255,255,255,0.75)');
+      ctx.fillStyle = g;
+      ctx.globalAlpha = 0.85;
+      rr(x, base-hgt, w, hgt, w/2);
+      ctx.fill();
+    }
+    var cx = W/2, cy = H*0.4;
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = c[2];
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.min(W,H)*(0.15 + energy*0.13), 0, 6.283);
+    ctx.stroke();
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = c[1];
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.min(W,H)*(0.21 + energy*0.17), 0, 6.283);
+    ctx.stroke();
+
+    for (var s=0;s<14;s++){
+      var sx = ((s*97)%100)/100*W;
+      var sy = ((s*57)%100)/100*H;
+      var tw = 0.35 + 0.65*Math.abs(Math.sin(t*0.002 + s));
+      ctx.globalAlpha = tw*0.75;
+      ctx.fillStyle = s%3 === 0 ? c[1] : '#ffffff';
+      star(sx, sy, 4 + tw*5);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 少女漫画：粉柱 + 心跳 + 金星 */
+  function pShoujo(t, c){
+    var N = 64, bw = W/N, base = H*0.88;
+    for (var b=0;b<N;b++){
+      var v = Math.pow(bandAt(b/N), 0.85);
+      var hgt = Math.max(5, v*H*0.44);
+      ctx.fillStyle = c[b % 2];
+      ctx.globalAlpha = 0.62;
+      rr(b*bw + bw*0.22, base-hgt, bw*0.56, hgt, bw*0.28);
+      ctx.fill();
+    }
+    var beat = 0.82 + energy*0.85;
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = c[3];
+    heart(W*0.5, H*0.36, Math.min(W,H)*0.085*beat);
+
+    for (var s=0;s<16;s++){
+      var a = (s/16)*6.283 + t*0.0006;
+      var r = Math.min(W,H)*(0.16 + 0.16*bandAt((s/16)));
+      var x = W/2 + Math.cos(a)*r*1.35;
+      var y = H/2 + Math.sin(a)*r;
+      var tw = 0.4 + 0.6*Math.abs(Math.sin(t*0.002 + s));
+      ctx.globalAlpha = tw*0.35;
+      ctx.fillStyle = '#fde68a';
+      star(x, y, 9 + tw*6);
+      ctx.globalAlpha = tw*0.9;
+      star(x, y, 3 + tw*3);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 暗金：一根细金线 + 刻度 */
+  function pLuxury(t, c){
+    var n = wave.length, mid = H*0.5;
+    ctx.strokeStyle = c[0];
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    for (var i=0;i<n;i+=2){
+      var x = i/(n-1)*W;
+      var v = (wave[i]-128)/128;
+      var y = mid + v*H*0.13;
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.75;
+    ctx.fillStyle = c[1];
+    for (var k=0;k<44;k++){
+      var p = (k+0.5)/44;
+      var hh = Math.max(2, bandAt(p)*H*0.2);
+      ctx.fillRect(W*p - 0.5, H*0.85 - hh, 1, hh);
+    }
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = c[0];
+    ctx.fillRect(W*0.08, H*0.85, W*0.84, 1);
+    ctx.fillRect(W*0.08, H*0.12, W*0.84, 1);
+    ctx.globalAlpha = 1;
+  }
+
+  /* 田园核：起伏的草地 + 花点 */
+  function pCottage(t, c){
+    for (var L=2; L>=0; L--){
+      var base = H*(0.5 + L*0.16);
+      ctx.beginPath();
+      ctx.moveTo(0, H);
+      for (var x=0;x<=W;x+=8){
+        var p = x/W;
+        var b = bandAt(p)*H*0.1*(1 - L*0.28);
+        var y = base + Math.sin(p*4 + L*1.6 + t*0.0008)*H*0.03 - b;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, H);
+      ctx.closePath();
+      ctx.globalAlpha = 0.45 - L*0.1;
+      ctx.fillStyle = c[(L+1) % c.length];
+      ctx.fill();
+    }
+    for (var k=0;k<11;k++){
+      var p2 = (k+0.5)/11;
+      var b2 = bandAt(p2);
+      var x2 = p2*W;
+      var y2 = H*0.5 + Math.sin(p2*4 + 1.6 + t*0.0008)*H*0.03 - b2*H*0.1;
+      ctx.globalAlpha = 0.3 + b2*0.6;
+      ctx.fillStyle = k % 2 ? c[2] : c[1];
+      ctx.beginPath();
+      ctx.arc(x2, y2, 3 + b2*9, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 新艺术：藤蔓生长 + 金点 */
+  function pNouveau(t, c){
+    for (var L=0;L<4;L++){
+      ctx.beginPath();
+      for (var i=0;i<=200;i++){
+        var p = i/200;
+        var b = bandAt(p);
+        var a = p*Math.PI*3 + L*0.8 + t*0.0004;
+        var r = Math.min(W,H)*(0.05 + p*0.4) + b*60;
+        var x = W*0.5 + Math.cos(a)*r*1.3;
+        var y = H*0.62 + Math.sin(a)*r*0.8;
+        if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = c[L % 3];
+      ctx.globalAlpha = 0.1;
+      ctx.lineWidth = 18;
+      ctx.stroke();
+      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = 2.4;
+      ctx.stroke();
+    }
+    for (var k=0;k<24;k++){
+      var p2 = ((k*37) % 100)/100;
+      var b2 = bandAt(p2);
+      ctx.globalAlpha = 0.25 + b2*0.7;
+      ctx.fillStyle = c[1];
+      ctx.beginPath();
+      ctx.arc(p2*W, H*0.18 + ((k*53) % 62)/100*H*0.6, 1.6 + b2*5, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 纸艺：带偏移阴影的纸片柱 + 纸屑 */
+  function pPapercraft(t, c){
+    var bars = 26, bw = W/bars, base = H*0.86;
+    for (var b=0;b<bars;b++){
+      var v = Math.pow(bandAt(b/bars), 0.9);
+      var hgt = Math.max(12, v*H*0.48);
+      var x = b*bw + bw*0.14, w = bw*0.72;
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = 'rgba(0,0,0,0.12)';
+      ctx.fillRect(x+5, base - hgt + 5, w, hgt);
+      ctx.fillStyle = c[b % c.length];
+      ctx.fillRect(x, base - hgt, w, hgt);
+    }
+    for (var k=0;k<12;k++){
+      var p = ((k*61) % 100)/100;
+      var b2 = bandAt(p);
+      ctx.save();
+      ctx.translate(p*W, H*0.16 + ((k*29) % 70)/100*H*0.5);
+      ctx.rotate((t*0.0004 + k)*1.2);
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = c[(k+1) % c.length];
+      var sz = 8 + b2*10;
+      ctx.fillRect(3, 3, sz, sz);
+      ctx.fillStyle = c[(k+2) % c.length];
+      ctx.fillRect(0, 0, sz, sz);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ================= 第二种、第三种效果 ================= */
+
+  function polygon(n, r, off){
+    ctx.beginPath();
+    for (var i=0;i<n;i++){
+      var a = (i/n)*6.283 + off;
+      var x = Math.cos(a)*r, y = Math.sin(a)*r;
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+  }
+
+  /* 韩式 · 同心圆 */
+  function kRings(t, c){
+    var cx = W/2, cy = H*0.52;
+    var base = Math.min(W,H)*0.055;
+    ctx.lineWidth = 1;
+    for (var i=0;i<8;i++){
+      var v = bandAt(i/8);
+      var r = base*(i+1) + v*Math.min(W,H)*0.11 + Math.sin(t*0.0009 + i)*4;
+      ctx.globalAlpha = 0.08 + 0.45*(1 - i/8);
+      ctx.strokeStyle = i % 2 ? c[2] : c[0];
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, 6.283);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 韩式 · 圆点列 */
+  function kDots(t, c){
+    var N = 26, cy = H*0.5;
+    for (var i=0;i<N;i++){
+      var p = (i+0.5)/N;
+      var v = bandAt(p);
+      ctx.globalAlpha = 0.22 + v*0.65;
+      ctx.fillStyle = i % 2 ? c[1] : c[0];
+      ctx.beginPath();
+      ctx.arc(W*p, cy, 1.6 + v*12, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 超现实 · 梦中之眼 */
+  function sEye(t, c){
+    var cx = W/2, cy = H*0.5;
+    var r = Math.min(W,H)*(0.19 + energy*0.15);
+    for (var i=0;i<3;i++){
+      ctx.globalAlpha = 0.2 - i*0.05;
+      ctx.fillStyle = c[i];
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, r*(1 + i*0.24), r*(0.6 + i*0.14), Math.sin(t*0.0004)*0.3, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = c[3];
+    ctx.beginPath();
+    ctx.arc(cx, cy, r*0.2 + energy*26, 0, 6.283);
+    ctx.fill();
+    for (var k=0;k<20;k++){
+      var a = (k/20)*6.283 + t*0.0003;
+      var rr = r*1.7;
+      var v = bandAt(k/20);
+      ctx.globalAlpha = 0.1 + v*0.45;
+      ctx.strokeStyle = c[0];
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a)*rr*0.92, cy + Math.sin(a)*rr*0.58);
+      ctx.lineTo(cx + Math.cos(a)*(rr*0.92 + 14 + v*20), cy + Math.sin(a)*(rr*0.58 + 10 + v*20));
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 超现实 · 漂浮球 */
+  function sOrbs(t, c){
+    for (var i=0;i<12;i++){
+      var a = (i/12)*6.283 + t*0.00025*(1 + i%3);
+      var rr = Math.min(W,H)*(0.1 + 0.3*((i*37) % 100)/100);
+      var x = W/2 + Math.cos(a)*rr*1.4;
+      var y = H/2 + Math.sin(a*1.2)*rr*0.85;
+      var v = bandAt(i/12);
+      var rad = 12 + v*42;
+      ctx.globalAlpha = 0.26;
+      ctx.fillStyle = c[i % c.length];
+      ctx.beginPath();
+      ctx.ellipse(x, y, rad, rad*(1.1 + 0.4*Math.sin(t*0.001 + i)), a*0.1, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 千禧 · 镭射盘 */
+  function yDisc(t, c){
+    var cx = W/2, cy = H*0.48;
+    var r0 = Math.min(W,H)*0.075;
+    var pal = [c[0], c[1], c[2], c[3]];
+    for (var i=9;i>=1;i--){
+      var v = bandAt(i/9);
+      var r = r0*i*0.72 + v*36;
+      ctx.globalAlpha = 0.32;
+      ctx.lineWidth = 9;
+      ctx.strokeStyle = pal[i % 4];
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, 6.283);
+      ctx.stroke();
+    }
+    for (var k=0;k<24;k++){
+      var a = (k/24)*6.283 + t*0.0002;
+      var v2 = bandAt(k/24);
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = k % 2 ? c[1] : c[0];
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a)*r0*6, cy + Math.sin(a)*r0*6);
+      ctx.lineTo(cx + Math.cos(a)*(r0*6 + v2*110), cy + Math.sin(a)*(r0*6 + v2*110));
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 千禧 · 气泡阵 */
+  function yBubbles(t, c){
+    var cols = 8, rows = 5;
+    var cw = W/cols, ch = H/rows;
+    for (var i=0;i<cols;i++){
+      for (var j=0;j<rows;j++){
+        var v = bandAt(i/cols);
+        var x = cw*(i+0.5) + Math.sin(t*0.001 + i*1.3 + j)*10;
+        var y = ch*(j+0.5) + Math.cos(t*0.0012 + j*1.1 + i)*8;
+        var r = 5 + v*26*((rows-j)/rows);
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = [c[0], c[1], c[2]][(i+j) % 3];
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, 6.283);
+        ctx.fill();
+        ctx.globalAlpha = 0.75;
+        ctx.fillStyle = 'rgba(255,255,255,.85)';
+        ctx.beginPath();
+        ctx.arc(x - r*0.3, y - r*0.35, r*0.24, 0, 6.283);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 少女漫画 · 花瓣环 */
+  function shPetals(t, c){
+    var cx = W/2, cy = H/2, N = 24;
+    var r0 = Math.min(W,H)*0.1;
+    for (var i=0;i<N;i++){
+      var a = (i/N)*6.283 + t*0.0003;
+      var v = bandAt(i/N);
+      var len = r0*1.1 + v*Math.min(W,H)*0.22;
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = i % 2 ? c[1] : c[0];
+      ctx.save();
+      ctx.translate(cx + Math.cos(a)*r0, cy + Math.sin(a)*r0);
+      ctx.rotate(a + 1.5708);
+      ctx.beginPath();
+      ctx.ellipse(0, -len*0.5, len*0.2, len*0.5, 0, 0, 6.283);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = '#fde68a';
+    ctx.beginPath();
+    ctx.arc(cx, cy, r0*0.45 + energy*16, 0, 6.283);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  /* 少女漫画 · 甜圈泡 */
+  function shRing(t, c){
+    var cx = W/2, cy = H/2;
+    var R = Math.min(W,H)*(0.23 + energy*0.13);
+    var N = 68;
+    for (var i=0;i<N;i++){
+      var a = (i/N)*6.283;
+      var v = Math.pow(bandAt(i/N), 0.9);
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = i % 2 ? c[0] : c[3];
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(a)*R, cy + Math.sin(a)*R, 5 + v*19, 0, 6.283);
+      ctx.fill();
+    }
+    for (var s=0;s<10;s++){
+      var a2 = (s/10)*6.283 + t*0.0007;
+      var rr = R*1.08;
+      var tw = 0.4 + 0.6*Math.abs(Math.sin(t*0.002 + s));
+      var x = cx + Math.cos(a2)*rr, y = cy + Math.sin(a2)*rr;
+      ctx.globalAlpha = tw*0.3;
+      ctx.fillStyle = '#fde68a';
+      star(x, y, 10 + tw*6);
+      ctx.globalAlpha = tw*0.9;
+      star(x, y, 3 + tw*3);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 暗金 · 表盘环 */
+  function lDial(t, c){
+    var cx = W/2, cy = H/2;
+    var R = Math.min(W,H)*0.27;
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = c[0];
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, R*0.7, 0, 6.283); ctx.stroke();
+    var N = 60;
+    for (var i=0;i<N;i++){
+      var a = (i/N)*6.283 - 1.5708;
+      var v = bandAt(i/N);
+      var len = (i%5 === 0 ? 15 : 7) + v*26;
+      ctx.globalAlpha = i%5 === 0 ? 0.85 : 0.35;
+      ctx.strokeStyle = i%5 === 0 ? c[0] : c[1];
+      ctx.lineWidth = i%5 === 0 ? 1.4 : 1;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a)*(R+6), cy + Math.sin(a)*(R+6));
+      ctx.lineTo(cx + Math.cos(a)*(R+6+len), cy + Math.sin(a)*(R+6+len));
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = c[0];
+    ctx.beginPath();
+    ctx.arc(cx, cy, 4 + energy*10, 0, 6.283);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  /* 暗金 · 石纹涟漪 */
+  function lRipple(t, c){
+    var cx = W/2, cy = H/2;
+    for (var i=6;i>=1;i--){
+      var r = Math.min(W,H)*0.05*i + Math.sin(t*0.001 + i)*6 + energy*28;
+      ctx.globalAlpha = 0.1 + 0.055*i;
+      ctx.strokeStyle = i % 2 ? c[0] : c[2];
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, 6.283);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 田园 · 花园环 */
+  function cWreath(t, c){
+    var cx = W/2, cy = H/2, N = 18;
+    var R = Math.min(W,H)*0.25;
+    for (var i=0;i<N;i++){
+      var a = (i/N)*6.283 + t*0.0002;
+      var v = bandAt(i/N);
+      var x = cx + Math.cos(a)*R;
+      var y = cy + Math.sin(a)*R;
+      var pet = 6 + v*13;
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = i%3 === 0 ? c[1] : (i%3 === 1 ? c[2] : c[0]);
+      for (var k=0;k<5;k++){
+        var pa = (k/5)*6.283;
+        ctx.beginPath();
+        ctx.arc(x + Math.cos(pa)*pet*0.6, y + Math.sin(pa)*pet*0.6, pet*0.48, 0, 6.283);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = '#f5d75f';
+      ctx.beginPath();
+      ctx.arc(x, y, pet*0.32, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 田园 · 池塘涟漪 */
+  function cPond(t, c){
+    var cx = W/2, cy = H*0.55;
+    for (var i=5;i>=1;i--){
+      var r = Math.min(W,H)*0.06*i + Math.sin(t*0.0012 + i)*8 + energy*22;
+      ctx.globalAlpha = 0.14 + 0.05*i;
+      ctx.fillStyle = i % 2 ? c[0] : c[2];
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, r*1.5, r*0.85, 0, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 新艺术 · 花窗环 */
+  function nWindow(t, c){
+    var cx = W/2, cy = H*0.5;
+    var R = Math.min(W,H)*0.29;
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = c[1];
+    ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.stroke();
+    ctx.globalAlpha = 0.4;
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = c[3];
+    ctx.beginPath(); ctx.arc(cx, cy, R*0.76, 0, 6.283); ctx.stroke();
+    var N = 12;
+    for (var i=0;i<N;i++){
+      var a = (i/N)*6.283 + t*0.0003;
+      var v = bandAt(i/N);
+      var x2 = cx + Math.cos(a)*(R*0.76 + v*Math.min(W,H)*0.13);
+      var y2 = cy + Math.sin(a)*(R*0.76 + v*Math.min(W,H)*0.13);
+      ctx.globalAlpha = 0.55;
+      ctx.strokeStyle = c[0];
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a)*R*0.76, cy + Math.sin(a)*R*0.76);
+      ctx.quadraticCurveTo(cx + Math.cos(a + 0.32)*R, cy + Math.sin(a + 0.32)*R, x2, y2);
+      ctx.stroke();
+      ctx.globalAlpha = 0.75;
+      ctx.fillStyle = c[1];
+      ctx.beginPath();
+      ctx.arc(x2, y2, 2 + v*6, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 新艺术 · 金脉球 */
+  function nOrb(t, c){
+    var cx = W/2, cy = H/2;
+    var R = Math.min(W,H)*(0.19 + energy*0.12);
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = c[2];
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.fill();
+    var N = 34;
+    for (var i=0;i<N;i++){
+      var a = (i/N)*6.283 + t*0.0004;
+      var v = bandAt(i/N);
+      ctx.globalAlpha = 0.3 + 0.4*v;
+      ctx.strokeStyle = c[0];
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a)*R*0.2, cy + Math.sin(a)*R*0.2);
+      ctx.quadraticCurveTo(
+        cx + Math.cos(a + 0.5)*R*0.7, cy + Math.sin(a + 0.5)*R*0.7,
+        cx + Math.cos(a)*(R + v*38), cy + Math.sin(a)*(R + v*38)
+      );
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = c[1];
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3 + energy*10, 0, 6.283);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  /* 纸艺 · 纸花环 */
+  function pRing(t, c){
+    var cx = W/2, cy = H/2, N = 14;
+    var R = Math.min(W,H)*0.25;
+    for (var i=0;i<N;i++){
+      var a = (i/N)*6.283 + t*0.0002;
+      var v = bandAt(i/N);
+      var sz = 15 + v*30;
+      ctx.save();
+      ctx.translate(cx + Math.cos(a)*R, cy + Math.sin(a)*R);
+      ctx.rotate(a*1.6 + t*0.0002);
+      ctx.fillStyle = 'rgba(0,0,0,.12)';
+      ctx.fillRect(-sz/2 + 4, -sz/2 + 4, sz, sz);
+      ctx.fillStyle = c[i % c.length];
+      ctx.fillRect(-sz/2, -sz/2, sz, sz);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 纸艺 · 剪纸球 */
+  function pBall(t, c){
+    var cx = W/2, cy = H/2;
+    for (var L=5; L>=1; L--){
+      var v = bandAt(L/5);
+      var r = Math.min(W,H)*(0.055 + 0.072*L) + v*28;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(t*0.0002*(L % 2 ? 1 : -1));
+      ctx.fillStyle = 'rgba(0,0,0,.1)';
+      polygon(4 + L, r, 0.12);
+      ctx.fill();
+      ctx.fillStyle = c[(L-1) % c.length];
+      polygon(4 + L, r, 0);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ================= 效果表 ================= */
+  var EFF = {
+    korean:     [{n:'呼吸线', f:pKorean},     {n:'同心圆', f:kRings},   {n:'圆点列', f:kDots}],
+    surreal:    [{n:'融化波', f:pSurreal},    {n:'梦中之眼', f:sEye},   {n:'漂浮球', f:sOrbs}],
+    y2k:        [{n:'金属环', f:pY2k},        {n:'镭射盘', f:yDisc},    {n:'气泡阵', f:yBubbles}],
+    shoujo:     [{n:'粉柱心', f:pShoujo},     {n:'花瓣环', f:shPetals}, {n:'甜圈泡', f:shRing}],
+    luxury:     [{n:'金线尺', f:pLuxury},     {n:'表盘环', f:lDial},    {n:'石纹涟漪', f:lRipple}],
+    cottage:    [{n:'草坡', f:pCottage},      {n:'花园环', f:cWreath},  {n:'池塘涟漪', f:cPond}],
+    nouveau:    [{n:'藤蔓', f:pNouveau},      {n:'花窗环', f:nWindow},  {n:'金脉球', f:nOrb}],
+    papercraft: [{n:'纸片柱', f:pPapercraft}, {n:'纸花环', f:pRing},    {n:'剪纸球', f:pBall}]
+  };
+  var fxMem = {korean:1, surreal:1, y2k:1, shoujo:1, luxury:1, cottage:1, nouveau:1, papercraft:1};
+
+  function curFx(){
+    var list = EFF[themeId];
+    var i = fxMem[themeId] || 0;
+    if (i >= list.length) i = 0;
+    return list[i];
+  }
+
+  function buildFx(){
+    el.fxChips.innerHTML = '';
+    var list = EFF[themeId];
+    var cur = fxMem[themeId] || 0;
+    list.forEach(function(fx, i){
+      var b = document.createElement('button');
+      b.className = 'btn';
+      b.type = 'button';
+      b.textContent = fx.n;
+      b.setAttribute('aria-pressed', i === cur ? 'true' : 'false');
+      b.addEventListener('click', function(){
+        fxMem[themeId] = i;
+        Array.prototype.forEach.call(el.fxChips.children, function(x){
+          x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+        });
+        setStatus('效果：' + fx.n + '。');
+      });
+      el.fxChips.appendChild(b);
+    });
+  }
+
+  /* ================= 主循环 ================= */
+  var lastT = performance.now();
+  function loop(now){
+    requestAnimationFrame(loop);
+    var dt = Math.min(50, now - lastT);
+    lastT = now;
+
+    if (audioBuffer && isPlaying){
+      var ct = currentTime();
+      if (ct >= audioBuffer.duration - 0.04){
+        isPlaying = false;
+        stopSource();
+        offset = audioBuffer.duration;
+        el.playBtn.textContent = '播放';
+        if (recording) stopRecording();
+      }
+      if (!seeking) el.seek.value = Math.round(ct/audioBuffer.duration*1000);
+      el.timeLabel.textContent = fmt(ct) + ' / ' + fmt(audioBuffer.duration);
+    }
+
+    updateSpectrum();
+
+    var c = SKIN[themeId].colors;
+    drawBackground(now);
+    curFx().f(now, c);
+  }
+
+  /* ================= 主题切换 ================= */
+  function setTheme(id, silent){
+    themeId = id;
+    document.documentElement.setAttribute('data-theme', id);
+    var btn = el.themeBar.querySelector('[data-id="' + id + '"]');
+    Array.prototype.forEach.call(el.themeBar.children, function(b){
+      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+    });
+    el.titleEl.textContent = COPY[id].title;
+    el.subEl.textContent = COPY[id].sub;
+    buildBg();
+    buildFx();
+    if (!silent){
+      var nm = '';
+      THEMES.forEach(function(t){ if (t.id === id) nm = t.name; });
+      setStatus('主题：' + nm + '。');
+    }
+  }
+
+  function buildThemes(){
+    THEMES.forEach(function(t){
+      var b = document.createElement('button');
+      b.className = 'tbtn';
+      b.type = 'button';
+      b.dataset.id = t.id;
+      b.textContent = t.name;
+      b.setAttribute('aria-pressed', t.id === themeId ? 'true' : 'false');
+      b.addEventListener('click', function(){ setTheme(t.id); });
+      el.themeBar.appendChild(b);
+    });
+  }
+
+  function setRes(i, silent){
+    resIndex = i;
+    var R = RES[i];
+    canvas.width = R.w;
+    canvas.height = R.h;
+    W = canvas.width;
+    H = canvas.height;
+    sprites = {};
+    buildBg();
+    if (!silent) setStatus('画质：' + R.name + '。手机录制建议 540p。');
+  }
+
+  function buildRes(){
+    RES.forEach(function(r, i){
+      var b = document.createElement('button');
+      b.className = 'btn';
+      b.type = 'button';
+      b.textContent = r.name;
+      b.setAttribute('aria-pressed', i === resIndex ? 'true' : 'false');
+      b.addEventListener('click', function(){
+        if (recording){ setStatus('录制中别改画质，会花。'); return; }
+        setRes(i);
+        Array.prototype.forEach.call(el.resChips.children, function(c){
+          c.setAttribute('aria-pressed', c === b ? 'true' : 'false');
+        });
+      });
+      el.resChips.appendChild(b);
+    });
+  }
+
+  /* ================= 事件 ================= */
+  el.fileInput.addEventListener('change', function(e){ loadFile(e.target.files[0]); });
+  document.getElementById('pickBtn').addEventListener('click', function(){ el.fileInput.click(); });
+  el.playBtn.addEventListener('click', togglePlay);
+
+  el.seek.addEventListener('input', function(){
+    if (!audioBuffer) return;
+    seeking = true;
+    var t = el.seek.value/1000*audioBuffer.duration;
+    el.timeLabel.textContent = fmt(t) + ' / ' + fmt(audioBuffer.duration);
+    offset = t;
+    if (isPlaying) play(t);
+  });
+  el.seek.addEventListener('change', function(){ seeking = false; });
+  el.seek.addEventListener('pointerup', function(){ seeking = false; });
+
+  el.recBtn.addEventListener('click', function(){
+    if (recording) stopRecording(); else startRecording();
+  });
+  el.shareBtn.addEventListener('click', saveVideo);
+  el.openBtn.addEventListener('click', openBlob);
+  el.dlLink.addEventListener('click', function(e){
+    if (!lastUrl){ e.preventDefault(); setStatus('还没有录好的视频。'); }
+  });
+
+  ['dragenter','dragover'].forEach(function(ev){
+    document.addEventListener(ev, function(e){
+      e.preventDefault();
+      el.dropTip.classList.remove('hide');
+    });
+  });
+  ['dragleave','drop'].forEach(function(ev){
+    document.addEventListener(ev, function(e){
+      e.preventDefault();
+      if (e.type === 'drop' && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+      if (audioBuffer) el.dropTip.classList.add('hide');
+    });
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON'){
+      e.preventDefault();
+      togglePlay();
+    }
+    if (e.key === '[' || e.key === ']'){
+      var idx = 0;
+      THEMES.forEach(function(t, i){ if (t.id === themeId) idx = i; });
+      idx = (idx + (e.key === ']' ? 1 : THEMES.length - 1)) % THEMES.length;
+      setTheme(THEMES[idx].id);
+    }
+  });
+
+  buildThemes();
+  buildRes();
+  setTheme('korean', true);
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
